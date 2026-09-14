@@ -1,0 +1,93 @@
+{
+  "version": "static-live.stage-projection/v0.1",
+  "song": {
+    "id": "rocket-step",
+    "title": "ROCKET STEP",
+    "sourceReceipt": "specimen:LIVE-001/rocket-step"
+  },
+  "tempo": {
+    "bpm": 148,
+    "meter": "4/4"
+  },
+  "landmarks": [
+    "intro",
+    "verse-1",
+    "pre-chorus",
+    "chorus",
+    "verse-2",
+    "chorus",
+    "outro"
+  ],
+  "cues": {
+    "click": "stems/click.wav",
+    "voice": "stems/cues.wav"
+  },
+  "configuration": {
+    "id": "sc3",
+    "label": "SC/3"
+  },
+  "playable": true,
+  "liveContributions": [
+    {
+      "performerId": "voice",
+      "label": "Voice",
+      "capabilities": ["lead-vocal.live"]
+    },
+    {
+      "performerId": "guitar",
+      "label": "Guitar",
+      "capabilities": ["guitar.live"]
+    },
+    {
+      "performerId": "bass",
+      "label": "Bass",
+      "capabilities": ["bass.live"]
+    }
+  ],
+  "enabledStems": [
+    {
+      "id": "textures",
+      "kind": "always",
+      "path": "stems/textures.wav",
+      "output": "foh"
+    },
+    {
+      "id": "drums-fallback",
+      "kind": "fallback",
+      "coversCapability": "drums.live",
+      "path": "stems/drums.wav",
+      "output": "foh"
+    }
+  ],
+  "disabledFallbackStems": [
+    {
+      "id": "lead-vocal-fallback",
+      "kind": "fallback",
+      "coversCapability": "lead-vocal.live",
+      "path": "stems/lead-vocal.wav",
+      "output": "foh"
+    },
+    {
+      "id": "guitar-fallback",
+      "kind": "fallback",
+      "coversCapability": "guitar.live",
+      "path": "stems/guitar.wav",
+      "output": "foh"
+    },
+    {
+      "id": "bass-fallback",
+      "kind": "fallback",
+      "coversCapability": "bass.live",
+      "path": "stems/bass.wav",
+      "output": "foh"
+    }
+  ],
+  "fallbackCoverage": [
+    {
+      "capability": "drums.live",
+      "stemId": "drums-fallback",
+      "reason": "required capability has no live provider"
+    }
+  ],
+  "unresolvedCapabilities": []
+}

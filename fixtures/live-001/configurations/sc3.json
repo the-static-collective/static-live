@@ -1,0 +1,9 @@
+{
+  "id": "sc3",
+  "label": "SC/3",
+  "performers": [
+    { "id": "voice", "label": "Voice", "capabilities": ["lead-vocal.live"] },
+    { "id": "guitar", "label": "Guitar", "capabilities": ["guitar.live"] },
+    { "id": "bass", "label": "Bass", "capabilities": ["bass.live"] }
+  ]
+}
