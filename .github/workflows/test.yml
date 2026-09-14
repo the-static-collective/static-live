@@ -14,3 +14,6 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+      - run: npm run phono-live:001
+      - run: git diff --exit-code -- examples/phono-live-001
+      - run: npm test
