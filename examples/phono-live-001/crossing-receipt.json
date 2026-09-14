@@ -1,0 +1,25 @@
+{
+  "version": "static-live.phono-live-crossing-receipt/v0.1",
+  "status": "completed",
+  "adapter": {
+    "id": "static-live.phonograph-intake",
+    "version": "0.1"
+  },
+  "acceptedPerformanceSchema": "haunted-phonograph/resolved-performance/v1",
+  "acceptedReceiptSchema": "haunted-phonograph/receipt/v1",
+  "upstreamReceiptHash": "sha256:2886d7a2035b02612158ca772a679030bdfcfdd86dff1e23ae66ee60ad8f0904",
+  "sourceHash": "sha256:8a7d0c4c3e5fe5a8eb9eb35217336d3c95fb0eb9555e72cf63c5a862e4de55ed",
+  "scoreHash": "sha256:2d18cb2aa0ff9ec0321cebf21f4be1199a5ac4eee7a0a6eb1b202cd1f462c4ff",
+  "resolvedPerformanceHash": "sha256:767137acce24b3da8f959887951cd05964b00881832766441b4fa10a133d161e",
+  "mutation": {
+    "law": "interval-preserving-motif-displacement/v1",
+    "seed": "seed-001",
+    "selectedOffset": -2,
+    "stream": "specimen-001/motif-displacement/v1"
+  },
+  "retainedUncertaintyRefs": [
+    "sha256:9733925cf865bb717f62e3ba54042d704462cb87bbdf709219297d57d12e82ab"
+  ],
+  "liveIntentHash": "sha256:736f1a821193e5865045e7190f3cd34b7432af4333f0df572dc236affdfd3432",
+  "performancePacketHash": "sha256:01ff6a92b69f9bbc2d61064ee90a4f69d0b8d5d35da352903db3d4cad08b4695"
+}

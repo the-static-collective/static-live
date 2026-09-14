@@ -39,6 +39,30 @@ SC/2 -> drums.live + bass.live absent, both fallbacks activate
 
 The hostile proof removes each SC/4 performer one at a time and recompiles. Every removal remains playable because the fixture declares a fallback for every required capability. The fallback receipt names only the capability and stem—not an absent performer.
 
+## PHONO-LIVE-001 — THE SONG WALKS INTO THE ROOM
+
+Static Live can accept one exact Haunted Phonograph `ResolvedPerformance` plus its completed receipt, verify the upstream ancestry, combine it with explicit human-authored `LiveIntent`, and emit a normal Static Live Performance Packet.
+
+- **Haunted Phonography says what music emerged.**
+- **Live Intent says how we choose to embody it.**
+- **Static Live says what the humans actually in the room can truthfully perform.**
+
+No MIDI note, channel, or inferred instrument silently becomes a human stage role.
+
+Run the checked-in specimen:
+
+```bash
+npm run phono-live:001
+```
+
+The specimen proves PL/2, PL/1, PL/0, and PL/BROKEN. PL/BROKEN crosses successfully as a valid packet, then fails closed at stage compilation because one required capability has neither a live provider nor a declared fallback. PL/0 demonstrates executable fallback coverage, not equivalence to a human live performance.
+
+Checked-in witnesses live under `examples/phono-live-001/`.
+
+Design: `docs/superpowers/specs/2026-09-14-phono-live-001-song-walks-into-room-design.md`
+
+Plan: `docs/superpowers/plans/2026-09-14-phono-live-001-song-walks-into-room.md`
+
 ## Quick start
 
 Requires Node.js 22+ and no external packages.

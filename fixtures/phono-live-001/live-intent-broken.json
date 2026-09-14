@@ -1,0 +1,1 @@
+{"version":"static-live.live-intent/v0.1","song":{"id":"phono-live-001","title":"PHONO-LIVE-001"},"meter":"4/4","landmarks":["entry","body","exit"],"requiredCapabilities":["melody.live","pulse.live"],"stems":[{"id":"melody-fallback","kind":"fallback","coversCapability":"melody.live","path":"stems/melody.wav","output":"foh"}],"cues":{"click":null,"voice":null}}
