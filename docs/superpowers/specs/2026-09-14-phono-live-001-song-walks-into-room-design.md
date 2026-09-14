@@ -65,7 +65,7 @@ Therefore the receiving system owns the adapter. Haunted Phonography remains unc
 7. **The receiving system verifies what it consumes.** A `ResolvedPerformance` whose canonical hash does not match the supplied Phonograph receipt is refused.
 8. **Uncertainty remains uncertainty.** The adapter must not fill missing stage facts by guessing from the music.
 9. **No new shared package is introduced in this slice.** The crossing remains appliance-local until repeated use demonstrates a stable extraction boundary.
-10. **Failure is explicit.** Unsupported schemas, mismatched hashes, malformed Live Intent, invalid tempo, or uncovered required capabilities must fail closed.
+10. **Failure is explicit.** Unsupported schemas, mismatched hashes, malformed Live Intent, invalid tempo, or uncovered required capabilities must fail closed at the layer that owns the claim.
 
 ## Input A — Haunted Phonograph `ResolvedPerformance`
 
@@ -103,12 +103,20 @@ The adapter verifies at minimum:
 receipt.status == completed
 performance.sourceHash == receipt.sourceHash
 performance.scoreHash == receipt.scoreHash
-hashCanonical(performance) == receipt.resolvedPerformanceHash
+hpHashCanonical(performance) == receipt.resolvedPerformanceHash
 ```
 
 The adapter also retains the receipt's source, score, mutation, MIDI, and uncertainty references as provenance for the crossing receipt.
 
 Static Live must not recompute or reinterpret Haunted Phonograph's upstream source evidence.
+
+### Haunted Phonograph canonical-hash compatibility
+
+The upstream `resolvedPerformanceHash` was minted with Haunted Phonograph's current canonical JSON policy: JSON-safe plain values only, finite numbers, `-0 -> 0`, arrays in order, object keys sorted lexicographically during serialization, then SHA-256 over UTF-8 canonical JSON with a `sha256:` prefix.
+
+Static Live therefore implements a small appliance-local compatibility function for this exact boundary, named conceptually `hpHashCanonical()` and covered by conformance fixtures.
+
+This is **compatibility code, not a new shared canonical identity law**. It exists only so the receiving appliance can verify the upstream receipt it chose to accept. If Haunted Phonography versions its canonicalization later, Static Live must explicitly add or refuse that version rather than silently treating algorithms as interchangeable.
 
 ## Input C — `LiveIntent`
 
@@ -116,7 +124,7 @@ Static Live must not recompute or reinterpret Haunted Phonograph's upstream sour
 
 It contains only facts that belong to stage embodiment rather than the resolved musical object.
 
-Proposed schema:
+Schema:
 
 ```json
 {
@@ -153,6 +161,20 @@ Proposed schema:
 
 `LiveIntent` is explicit human/arrangement intent. Its fields are not claims that Haunted Phonography heard those roles in the source recording.
 
+### Live Intent validation policy
+
+For v0.1:
+
+- `song.id`, `song.title`, and `meter` must be non-empty strings;
+- `landmarks`, `requiredCapabilities`, and `stems` must be arrays;
+- `requiredCapabilities` must not contain duplicates;
+- every fallback stem must name exactly one `coversCapability` that appears in `requiredCapabilities`;
+- at most one fallback stem may cover a given required capability;
+- stem ids must be unique;
+- no missing field is inferred from `ResolvedPerformance`.
+
+An always-on stem may omit `coversCapability`; a fallback stem may not.
+
 ## Output — Static Live Performance Packet
 
 The adapter emits the existing Static Live packet schema:
@@ -167,7 +189,7 @@ Field ownership is fixed as follows:
 | --- | --- |
 | `song.id` | `LiveIntent` |
 | `song.title` | `LiveIntent` |
-| `song.sourceReceipt` | PHONO-LIVE crossing receipt identity/reference |
+| `song.sourceReceipt` | deterministic reference to the exact upstream Phonograph receipt |
 | `tempo.bpm` | `ResolvedPerformance.tempoBpm` |
 | `tempo.meter` | `LiveIntent.meter` |
 | `landmarks` | `LiveIntent.landmarks` |
@@ -177,9 +199,27 @@ Field ownership is fixed as follows:
 
 The emitted packet must not contain invented performer identities.
 
+### Upstream receipt reference and cycle avoidance
+
+The adapter computes:
+
+```text
+upstreamReceiptHash = hpHashCanonical(phonographReceipt)
+```
+
+and writes:
+
+```text
+song.sourceReceipt = "hp-receipt:" + upstreamReceiptHash
+```
+
+The new PHONO-LIVE crossing receipt then binds that upstream receipt hash, the exact Live Intent hash, and the emitted Performance Packet hash.
+
+The Performance Packet does **not** point at the crossing receipt itself. This prevents a self-referential hash cycle.
+
 ## Crossing receipt
 
-The adapter also emits a machine-readable crossing receipt, proposed schema:
+The adapter emits a machine-readable crossing receipt:
 
 ```text
 static-live.phono-live-crossing-receipt/v0.1
@@ -187,19 +227,33 @@ static-live.phono-live-crossing-receipt/v0.1
 
 It records at minimum:
 
-- accepted Phonograph schema;
+- accepted Phonograph performance schema;
 - accepted Phonograph receipt schema;
+- `upstreamReceiptHash`;
 - Phonograph `sourceHash`;
 - Phonograph `scoreHash`;
 - Phonograph `resolvedPerformanceHash`;
 - mutation identity copied from the upstream receipt/performance;
 - retained uncertainty references;
-- hash of the exact `LiveIntent` consumed;
-- hash of the exact Static Live Performance Packet emitted;
+- Static Live canonical hash of the exact `LiveIntent` consumed;
+- Static Live canonical hash of the exact Performance Packet emitted;
 - adapter version;
 - result status.
 
-The receipt states only that this exact Phonograph descendant crossed into this exact declared stage packet. It does not claim that the resulting packet has been performed.
+The crossing receipt states only that this exact Phonograph descendant crossed into this exact declared stage packet. It does not claim that the packet has been rehearsed or performed.
+
+## Static Live local canonicalization
+
+Static Live may use a small deterministic JSON canonicalization helper for its own `LiveIntent`, Performance Packet, and crossing receipt hashing. That helper is local to Static Live v0.1 and need not claim compatibility with Haunted Phonograph canonicalization.
+
+The two hashing roles stay explicit:
+
+```text
+hpHashCanonical()   -> verify accepted upstream Phonograph objects
+liveHashCanonical() -> bind Static Live intake/output objects
+```
+
+If the implementations are presently identical, tests must still preserve their distinct semantic roles so one project's future hash-policy change does not silently redefine the other.
 
 ## Adapter responsibility
 
@@ -293,11 +347,11 @@ At least one required capability has neither a live provider nor a declared fall
 
 Expected result:
 
-- crossing itself may still succeed if the Performance Packet is valid;
+- crossing itself succeeds because packet validity and night-specific coverage are separate claims;
 - Static Live stage compilation returns `playable: false`;
 - the unresolved capability is explicit.
 
-This distinction matters: packet validity is not the same claim as night-specific playability.
+`PL/BROKEN` therefore uses a **valid** Live Intent whose required capability intentionally lacks a fallback. The intake does not require every capability to have one.
 
 ## Failure cases at the crossing
 
@@ -310,20 +364,23 @@ The intake refuses before packet generation when any of these occur:
 - canonical `ResolvedPerformance` hash mismatch;
 - non-positive or non-finite tempo;
 - malformed `LiveIntent`;
-- duplicate required capabilities if the chosen validation policy rejects them;
+- duplicate required capabilities;
+- duplicate stem ids;
 - fallback stem missing `coversCapability`;
 - fallback stem covers an undeclared capability;
-- duplicate fallback ambiguity for the same capability if not explicitly supported;
+- more than one fallback covers the same capability;
 - absent song id/title;
 - absent meter declaration.
 
 No failure path is repaired by guessing.
 
+An uncovered required capability is **not** an intake failure. It becomes a night-specific `playable: false` result only when the Performance Packet is compiled against a Stage Configuration.
+
 ## Determinism
 
-Given byte-equivalent parsed inputs under the declared canonicalization rule, the adapter must emit byte-equivalent canonical packet and crossing-receipt content, excluding ordinary filesystem formatting differences if files are pretty-printed for humans.
+Given equivalent parsed inputs under the declared canonicalization policies, the adapter must emit equivalent canonical Performance Packet and crossing-receipt content, excluding ordinary pretty-print whitespace in persisted files.
 
-The emitted Performance Packet should remain compatible with the existing dependency-free `compileStageProjection()` path.
+The emitted Performance Packet must remain compatible with the existing dependency-free `compileStageProjection()` path.
 
 ## Repository boundary
 
@@ -334,9 +391,11 @@ Expected implementation footprint:
 ```text
 src/
   phonograph-intake.js
+  canonical-json.js
 
 test/
   phonograph-intake.test.js
+  canonical-json.test.js
 
 fixtures/
   phono-live-001/
@@ -359,7 +418,9 @@ examples/
     broken/
 ```
 
-The existing `compiler.js` remains authoritative for stage coverage/playability and should not acquire Phonograph-specific logic.
+`canonical-json.js` contains the two explicitly named semantic hashing surfaces even if they currently share an internal implementation.
+
+The existing `compiler.js` remains authoritative for stage coverage/playability and must not acquire Phonograph-specific logic.
 
 Haunted Phonography receives no code change for this specimen.
 
@@ -368,15 +429,17 @@ Haunted Phonography receives no code change for this specimen.
 The implementation must prove at least:
 
 1. valid Phonograph performance + receipt + Live Intent produces one deterministic Performance Packet;
-2. the crossing receipt binds the exact performance and Live Intent to the emitted packet;
-3. a tampered performance fails the hash check;
-4. a mismatched source hash fails;
-5. a mismatched score hash fails;
-6. malformed Live Intent fails without inference;
-7. the generated packet compiles successfully through existing Static Live logic;
-8. `PL/2`, `PL/1`, and `PL/0` produce the expected live/fallback attribution;
-9. `PL/BROKEN` produces `playable: false` at stage compilation rather than being silently repaired;
-10. repeated identical intake produces identical canonical output.
+2. the exact upstream receipt receives a deterministic non-circular `song.sourceReceipt` reference;
+3. the crossing receipt binds the exact upstream receipt, performance, Live Intent, and emitted packet;
+4. Haunted Phonograph canonical-hash compatibility matches known upstream fixture hashes;
+5. a tampered performance fails the hash check;
+6. a mismatched source hash fails;
+7. a mismatched score hash fails;
+8. malformed or ambiguous Live Intent fails without inference;
+9. the generated packet compiles successfully through existing Static Live logic;
+10. `PL/2`, `PL/1`, and `PL/0` produce the expected live/fallback attribution;
+11. `PL/BROKEN` crosses successfully but produces `playable: false` at stage compilation;
+12. repeated identical intake produces identical canonical output.
 
 Existing LIVE-001 tests must remain green.
 
