@@ -13,9 +13,9 @@
   "resolvedPerformanceHash": "sha256:767137acce24b3da8f959887951cd05964b00881832766441b4fa10a133d161e",
   "mutation": {
     "law": "interval-preserving-motif-displacement/v1",
-    "stream": "specimen-001/motif-displacement/v1",
     "seed": "seed-001",
-    "selectedOffset": -2
+    "selectedOffset": -2,
+    "stream": "specimen-001/motif-displacement/v1"
   },
   "retainedUncertaintyRefs": [
     "sha256:9733925cf865bb717f62e3ba54042d704462cb87bbdf709219297d57d12e82ab"
