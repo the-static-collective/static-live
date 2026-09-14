@@ -1,0 +1,61 @@
+{
+  "version": "static-live.stage-projection/v0.1",
+  "song": {
+    "id": "phono-live-001",
+    "title": "PHONO-LIVE-001",
+    "sourceReceipt": "hp-receipt:sha256:2886d7a2035b02612158ca772a679030bdfcfdd86dff1e23ae66ee60ad8f0904"
+  },
+  "tempo": {
+    "bpm": 120,
+    "meter": "4/4"
+  },
+  "landmarks": [
+    "entry",
+    "body",
+    "exit"
+  ],
+  "cues": {
+    "click": null,
+    "voice": null
+  },
+  "configuration": {
+    "id": "pl1",
+    "label": "PL/1"
+  },
+  "playable": true,
+  "liveContributions": [
+    {
+      "performerId": "human-a",
+      "label": "Human A",
+      "capabilities": [
+        "melody.live"
+      ]
+    }
+  ],
+  "enabledStems": [
+    {
+      "id": "pulse-fallback",
+      "kind": "fallback",
+      "coversCapability": "pulse.live",
+      "path": "stems/pulse.wav",
+      "output": "foh"
+    }
+  ],
+  "disabledFallbackStems": [
+    {
+      "id": "melody-fallback",
+      "kind": "fallback",
+      "coversCapability": "melody.live",
+      "path": "stems/melody.wav",
+      "output": "foh"
+    }
+  ],
+  "fallbackCoverage": [
+    {
+      "capability": "pulse.live",
+      "stemId": "pulse-fallback",
+      "reason": "required capability has no live provider"
+    }
+  ],
+  "unresolvedCapabilities": []
+}
