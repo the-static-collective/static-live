@@ -2,115 +2,99 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a dependency-free Static Live intake that verifies one exact Haunted Phonograph `ResolvedPerformance` + completed receipt, combines it with explicit `LiveIntent`, emits a deterministic Performance Packet + crossing receipt, and proves truthful room incarnations under PL/2, PL/1, PL/0, and PL/BROKEN.
+**Goal:** Build a dependency-free Static Live intake that verifies one exact Haunted Phonograph `ResolvedPerformance` plus completed receipt, combines it with explicit human-authored `LiveIntent`, emits a deterministic Static Live Performance Packet plus crossing receipt, and proves PL/2, PL/1, PL/0, and PL/BROKEN room incarnations without inventing musical ancestry or human participation.
 
-**Architecture:** Haunted Phonography remains unchanged and authoritative for musical ancestry. Static Live owns the receiving adapter, keeps Haunted Phonograph hash compatibility separate from Static Live-local canonical hashing, validates stage intent without inferring stage facts from music, and hands the generated Performance Packet to the existing `compileStageProjection()` unchanged.
+**Architecture:** Haunted Phonography remains unchanged and authoritative for musical ancestry. Static Live owns the receiving adapter, keeps Haunted Phonograph hash compatibility separate from Static Live-local hashing, validates stage intent without inferring stage facts from music, and hands the generated packet to the existing `compileStageProjection()` unchanged.
 
-**Tech Stack:** Node.js 22+, ECMAScript modules, built-in `node:test`, built-in `node:crypto`, built-in filesystem APIs; no runtime dependencies.
+**Tech Stack:** Node.js 22+, ECMAScript modules, built-in `node:test`, `node:crypto`, and filesystem APIs; no runtime dependencies.
 
 **Spec:** `docs/superpowers/specs/2026-09-14-phono-live-001-song-walks-into-room-design.md`
 
 ## Global Constraints
 
-- Change **Static Live only**; Haunted Phonography receives no code change.
-- Keep `src/compiler.js` authoritative for night-specific coverage/playability and free of Phonograph-specific logic.
-- Accept only `haunted-phonograph/resolved-performance/v1` plus completed `haunted-phonograph/receipt/v1`.
-- Verify `sourceHash`, `scoreHash`, and Haunted Phonograph canonical `resolvedPerformanceHash` before packet generation.
-- `song.sourceReceipt` is `"hp-receipt:" + hpHashCanonical(phonographReceipt)`; the packet must not point at the new crossing receipt.
-- `LiveIntent` owns stage declarations: song id/title, meter, landmarks, capabilities, stems, cues.
-- Never infer instrumentation, performer capability, meter, fallback, or human identity from pitches, channels, timing, or other musical evidence.
-- Duplicate required capabilities are invalid.
-- Stem ids are unique.
-- Each fallback stem covers exactly one declared required capability; at most one fallback may cover each capability.
-- A required capability may legitimately have no fallback; this is not an intake failure and may later produce `playable: false`.
-- Preserve the semantic distinction `hpHashCanonical()` != `liveHashCanonical()` even while the algorithms are presently identical.
-- Identical parsed inputs must produce canonically identical packets and crossing receipts.
+- Change **Static Live only**. Haunted Phonography receives no code change.
+- Keep `src/compiler.js` authoritative for night-specific playability and free of Phonograph-specific logic.
+- Accept only `haunted-phonograph/resolved-performance/v1` and completed `haunted-phonograph/receipt/v1`.
+- Verify `sourceHash`, `scoreHash`, and Haunted Phonograph `resolvedPerformanceHash` before packet generation.
+- `song.sourceReceipt = "hp-receipt:" + hpHashCanonical(phonographReceipt)`; the packet never points at the new crossing receipt.
+- `LiveIntent` alone owns song id/title, meter, landmarks, required stage capabilities, stems, and cues.
+- Never infer instrumentation, performer identity/capability, meter, or fallback from notes, MIDI channels, timing, or other musical evidence.
+- Duplicate required capabilities and duplicate stem ids are invalid.
+- A fallback must cover exactly one declared required capability; at most one fallback may cover each capability.
+- A required capability may have no fallback; that is valid intake and may later produce `playable: false`.
+- Keep `hpHashCanonical()` and `liveHashCanonical()` as separately named semantic surfaces even if the algorithms are presently identical.
 - Existing LIVE-001 tests remain green.
-- No shared cross-project package, repository-to-repository runtime fetch, audio rendering, stem generation, scheduling, rehearsal state, MIDI/OSC control, or room-recording return path in this slice.
+- No shared cross-project package, runtime repository fetch, audio rendering, stem generation, scheduling, rehearsal state, MIDI/OSC control, or room-recording return loop in this slice.
 
 ---
 
-## File map
+## File Map
 
-- Create `src/canonical-json.js` — JSON-safe normalization plus separately named Haunted Phonograph compatibility and Static Live hash surfaces.
-- Create `src/phonograph-intake.js` — schema checks, ancestry verification, Live Intent validation, packet composition, crossing receipt composition.
-- Create `test/canonical-json.test.js` — canonicalization behavior and semantic hash-surface conformance.
-- Create `test/phonograph-intake.test.js` — intake success/failure/determinism tests.
-- Create `test/phono-live-001.test.js` — checked-in real upstream fixture + PL/2/PL/1/PL/0/PL/BROKEN integration proof through the existing compiler.
-- Create `fixtures/phono-live-001/resolved-performance.json` — exact exported Haunted Phonograph specimen performance.
-- Create `fixtures/phono-live-001/phonograph-receipt.json` — matching exact completed upstream receipt.
-- Create `fixtures/phono-live-001/live-intent.json` — normal two-capability embodiment declaration with both fallbacks.
-- Create `fixtures/phono-live-001/live-intent-broken.json` — valid intent with one required capability intentionally lacking fallback.
-- Create `fixtures/phono-live-001/configurations/pl2.json` — two live providers.
-- Create `fixtures/phono-live-001/configurations/pl1.json` — melody live, pulse fallback.
-- Create `fixtures/phono-live-001/configurations/pl0.json` — no humans, both fallbacks.
-- Create `fixtures/phono-live-001/configurations/broken.json` — no provider for the deliberately uncovered capability.
-- Create `fixtures/phono-live-001/UPSTREAM.md` — exact Haunted Phonography commit and deterministic fixture-export recipe.
-- Create `scripts/render-phono-live-001.js` — deterministic checked-in specimen/example renderer.
-- Create `test/phono-live-render.test.js` — render script smoke/determinism checks in a temp directory.
-- Modify `package.json` — add `phono-live:001` script only.
-- Create `examples/phono-live-001/performance-packet.json` and `crossing-receipt.json` — exact crossing witnesses.
-- Create `examples/phono-live-001/pl2/`, `pl1/`, `pl0/`, `broken/` stage projections and stage aids.
-- Modify `README.md` — document the crossing, command, boundary, and current proof.
+- Create `src/canonical-json.js` — canonical JSON plus separately named upstream/local hash surfaces.
+- Create `src/phonograph-intake.js` — upstream verification, Live Intent validation, packet/crossing receipt composition.
+- Create `test/canonical-json.test.js`.
+- Create `test/phonograph-intake.test.js`.
+- Create `test/phono-live-001.test.js`.
+- Create `test/phono-live-render.test.js`.
+- Create `fixtures/phono-live-001/resolved-performance.json`.
+- Create `fixtures/phono-live-001/phonograph-receipt.json`.
+- Create `fixtures/phono-live-001/live-intent.json`.
+- Create `fixtures/phono-live-001/live-intent-broken.json`.
+- Create `fixtures/phono-live-001/configurations/{pl2,pl1,pl0,broken}.json`.
+- Create `fixtures/phono-live-001/UPSTREAM.md`.
+- Create `scripts/render-phono-live-001.js`.
+- Modify `package.json` only to add `phono-live:001`.
+- Create generated witnesses under `examples/phono-live-001/`.
+- Modify `README.md` to explain the crossing and proof.
 
 ---
 
-### Task 1: Canonical JSON and two explicit hash surfaces
+### Task 1: Canonical JSON and two hash surfaces
 
 **Files:**
 - Create: `src/canonical-json.js`
 - Create: `test/canonical-json.test.js`
 
 **Interfaces:**
-- Produces: `canonicalStringify(value)` -> canonical JSON string.
-- Produces: `hpHashCanonical(value)` -> `sha256:<hex>` using the exact accepted Haunted Phonograph v1 algorithm.
-- Produces: `liveHashCanonical(value)` -> `sha256:<hex>` for Static Live-local binding.
-- Both public hash functions may call one internal serializer today; callers must not treat them as interchangeable policy names.
+- `canonicalStringify(value) -> string`
+- `hpHashCanonical(value) -> "sha256:<hex>"`
+- `liveHashCanonical(value) -> "sha256:<hex>"`
 
-- [ ] **Step 1: Write failing canonicalization tests**
+- [ ] **Step 1: Write failing tests**
 
-Create `test/canonical-json.test.js` with the exact behavioral floor:
+Create `test/canonical-json.test.js`:
 
 ```js
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import {
-  canonicalStringify,
-  hpHashCanonical,
-  liveHashCanonical,
-} from '../src/canonical-json.js';
+import { canonicalStringify, hpHashCanonical, liveHashCanonical } from '../src/canonical-json.js';
 
 const sha256 = (text) => `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`;
 
-test('canonical JSON sorts object keys, preserves array order, and normalizes -0', () => {
-  const value = {
-    z: -0,
-    a: [3, { y: true, x: 'room' }],
-  };
+test('sorts object keys, preserves array order, and normalizes -0', () => {
+  const value = { z: -0, a: [3, { y: true, x: 'room' }] };
   const expected = '{"a":[3,{"x":"room","y":true}],"z":0}';
   assert.equal(canonicalStringify(value), expected);
 });
 
-test('hp and live hash surfaces are separately named and deterministic', () => {
-  const value = { b: 2, a: 1 };
+test('keeps hp and live hash surfaces separately named and deterministic', () => {
   const expected = sha256('{"a":1,"b":2}');
-  assert.equal(hpHashCanonical(value), expected);
-  assert.equal(liveHashCanonical(value), expected);
-  assert.equal(hpHashCanonical(value), hpHashCanonical({ a: 1, b: 2 }));
-  assert.equal(liveHashCanonical(value), liveHashCanonical({ a: 1, b: 2 }));
+  assert.equal(hpHashCanonical({ b: 2, a: 1 }), expected);
+  assert.equal(liveHashCanonical({ b: 2, a: 1 }), expected);
 });
 
-test('canonicalization rejects non-finite numbers and unsupported JSON values', () => {
+test('rejects non-finite, undefined, sparse, and cyclic values', () => {
   assert.throws(() => canonicalStringify({ bpm: Infinity }), /finite numbers/);
   assert.throws(() => canonicalStringify({ bad: undefined }), /JSON-safe/);
   assert.throws(() => canonicalStringify([1, , 3]), /sparse arrays/);
+  const cyclic = {};
+  cyclic.self = cyclic;
+  assert.throws(() => canonicalStringify(cyclic), /cycles/);
 });
 ```
 
-- [ ] **Step 2: Run the focused test and verify RED**
-
-Run:
+- [ ] **Step 2: Verify RED**
 
 ```bash
 node --test test/canonical-json.test.js
@@ -118,9 +102,9 @@ node --test test/canonical-json.test.js
 
 Expected: FAIL because `src/canonical-json.js` does not exist.
 
-- [ ] **Step 3: Implement the minimal canonicalizer**
+- [ ] **Step 3: Implement the canonicalizer**
 
-Create `src/canonical-json.js` using `node:crypto`. Implement a JSON-safe normalizer matching Haunted Phonograph v1 for accepted upstream verification:
+Create `src/canonical-json.js`:
 
 ```js
 import { createHash } from 'node:crypto';
@@ -141,18 +125,22 @@ function normalize(value, path = '$', ancestors = new WeakSet()) {
     if (!Number.isFinite(value)) fail(`${path} must contain only finite numbers`);
     return Object.is(value, -0) ? 0 : value;
   }
+
   if (Array.isArray(value)) {
     if (ancestors.has(value)) fail(`${path} must not contain cycles`);
     ancestors.add(value);
     try {
-      return value.map((item, index) => {
+      const normalized = [];
+      for (let index = 0; index < value.length; index += 1) {
         if (!(index in value)) fail(`${path} must not contain sparse arrays`);
-        return normalize(item, `${path}[${index}]`, ancestors);
-      });
+        normalized.push(normalize(value[index], `${path}[${index}]`, ancestors));
+      }
+      return normalized;
     } finally {
       ancestors.delete(value);
     }
   }
+
   if (!isPlainObject(value) || Object.getOwnPropertySymbols(value).length > 0) {
     fail(`${path} must contain only JSON-safe plain objects`);
   }
@@ -184,42 +172,31 @@ export function canonicalStringify(value) {
   return serialize(normalize(value));
 }
 
-function hash(value) {
+function hashCanonical(value) {
   return `sha256:${createHash('sha256').update(canonicalStringify(value), 'utf8').digest('hex')}`;
 }
 
 export function hpHashCanonical(value) {
-  return hash(value);
+  return hashCanonical(value);
 }
 
 export function liveHashCanonical(value) {
-  return hash(value);
+  return hashCanonical(value);
 }
 ```
 
 Do not import Haunted Phonography code at runtime.
 
-- [ ] **Step 4: Run the focused test and verify GREEN**
-
-Run:
+- [ ] **Step 4: Verify GREEN and regressions**
 
 ```bash
 node --test test/canonical-json.test.js
+npm test
 ```
 
 Expected: PASS.
 
-- [ ] **Step 5: Run the existing suite for regression safety**
-
-Run:
-
-```bash
-npm test
-```
-
-Expected: existing LIVE-001 suite plus canonical tests PASS.
-
-- [ ] **Step 6: Commit Task 1**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add src/canonical-json.js test/canonical-json.test.js
@@ -235,21 +212,19 @@ git commit -m "feat: add PHONO-LIVE canonical hash surfaces"
 - Create: `test/phonograph-intake.test.js`
 
 **Interfaces:**
-- Consumes: `hpHashCanonical()` and `liveHashCanonical()` from Task 1.
-- Produces: `validateLiveIntent(liveIntent)` -> `true` or throws typed `TypeError` with `.code`.
-- Produces: `intakePhonographPerformance({ performance, phonographReceipt, liveIntent })` -> frozen `{ packet, crossingReceipt }`.
-- Exact packet schema: `static-live.performance-packet/v0.1`.
-- Exact crossing schema: `static-live.phono-live-crossing-receipt/v0.1`.
+- Consumes Task 1 hash functions.
+- Produces `validateLiveIntent(liveIntent) -> true` or throws `TypeError` with `.code = "INVALID_LIVE_INTENT"`.
+- Produces `intakePhonographPerformance({ performance, phonographReceipt, liveIntent }) -> { packet, crossingReceipt }`.
 
-- [ ] **Step 1: Write failing happy-path and ownership tests**
+- [ ] **Step 1: Write the failing happy-path test**
 
-In `test/phonograph-intake.test.js`, construct one minimal synthetic performance and derive its receipt hash using the real helper so the test does not hard-code a fake algorithm:
+Use this synthetic floor in `test/phonograph-intake.test.js`:
 
 ```js
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { hpHashCanonical, liveHashCanonical } from '../src/canonical-json.js';
-import { intakePhonographPerformance } from '../src/phonograph-intake.js';
+import { intakePhonographPerformance, validateLiveIntent } from '../src/phonograph-intake.js';
 
 const performance = {
   schema: 'haunted-phonograph/resolved-performance/v1',
@@ -262,7 +237,7 @@ const performance = {
   retainedUncertaintyRefs: ['sha256:harmony'],
 };
 
-const phonographReceipt = {
+const receipt = {
   schema: 'haunted-phonograph/receipt/v1',
   status: 'completed',
   sourceHash: performance.sourceHash,
@@ -286,52 +261,28 @@ const liveIntent = {
   cues: { click: null, voice: null },
 };
 
-test('intake preserves musical ancestry and takes stage facts only from Live Intent', () => {
-  const { packet, crossingReceipt } = intakePhonographPerformance({ performance, phonographReceipt, liveIntent });
-  const upstreamReceiptHash = hpHashCanonical(phonographReceipt);
-
+test('crosses verified music into stage intent without inventing participation', () => {
+  const { packet, crossingReceipt } = intakePhonographPerformance({ performance, phonographReceipt: receipt, liveIntent });
+  const upstreamReceiptHash = hpHashCanonical(receipt);
   assert.deepEqual(packet.song, {
     id: 'phono-live-001',
     title: 'PHONO-LIVE-001',
     sourceReceipt: `hp-receipt:${upstreamReceiptHash}`,
   });
   assert.deepEqual(packet.tempo, { bpm: 120, meter: '4/4' });
-  assert.deepEqual(packet.requiredCapabilities, ['melody.live', 'pulse.live']);
+  assert.equal('performers' in packet, false);
   assert.equal(crossingReceipt.upstreamReceiptHash, upstreamReceiptHash);
   assert.equal(crossingReceipt.resolvedPerformanceHash, hpHashCanonical(performance));
   assert.equal(crossingReceipt.liveIntentHash, liveHashCanonical(liveIntent));
   assert.equal(crossingReceipt.performancePacketHash, liveHashCanonical(packet));
-  assert.equal('performers' in packet, false);
 });
 ```
 
-Also assert repeated calls with equivalent parsed input objects produce deep-equal packet/receipt results.
+Also assert identical parsed inputs return deep-equal results.
 
-- [ ] **Step 2: Write failing refusal tests**
+- [ ] **Step 2: Write refusal and Live Intent tests**
 
-Add separate tests with exact expected error codes:
-
-```js
-assert.throws(
-  () => intakePhonographPerformance({
-    performance: { ...performance, schema: 'haunted-phonograph/resolved-performance/v999' },
-    phonographReceipt,
-    liveIntent,
-  }),
-  (error) => error.code === 'UNSUPPORTED_PHONOGRAPH_PERFORMANCE_SCHEMA',
-);
-
-assert.throws(
-  () => intakePhonographPerformance({
-    performance: { ...performance, tempoBpm: 0 },
-    phonographReceipt: { ...phonographReceipt, resolvedPerformanceHash: hpHashCanonical({ ...performance, tempoBpm: 0 }) },
-    liveIntent,
-  }),
-  (error) => error.code === 'INVALID_PHONOGRAPH_TEMPO',
-);
-```
-
-Cover all of these codes:
+Cover these exact codes:
 
 ```text
 UNSUPPORTED_PHONOGRAPH_PERFORMANCE_SCHEMA
@@ -344,91 +295,93 @@ INVALID_PHONOGRAPH_TEMPO
 INVALID_LIVE_INTENT
 ```
 
-For `INVALID_LIVE_INTENT`, include cases for missing song id/title, missing meter, duplicate required capability, duplicate stem id, fallback without `coversCapability`, fallback covering undeclared capability, and two fallbacks covering the same capability. Include one positive case where a required capability has **no** fallback and validation still succeeds.
+For `INVALID_LIVE_INTENT`, test missing/blank song id, song title, meter; non-array landmarks/capabilities/stems; duplicate capability; duplicate stem id; fallback without `coversCapability`; fallback covering undeclared capability; duplicate fallback coverage; invalid stem kind/path/output; and missing cues object. Also prove that a required capability with no fallback is valid.
 
-- [ ] **Step 3: Run the focused tests and verify RED**
+Example tamper assertion:
 
-Run:
+```js
+const tampered = structuredClone(performance);
+tampered.events[0].note += 1;
+assert.throws(
+  () => intakePhonographPerformance({ performance: tampered, phonographReceipt: receipt, liveIntent }),
+  (error) => error.code === 'PHONOGRAPH_PERFORMANCE_HASH_MISMATCH',
+);
+```
+
+- [ ] **Step 3: Verify RED**
 
 ```bash
 node --test test/phonograph-intake.test.js
 ```
 
-Expected: FAIL because `src/phonograph-intake.js` does not exist.
+Expected: FAIL because the intake module does not exist.
 
-- [ ] **Step 4: Implement exact validators and intake**
+- [ ] **Step 4: Implement validation and crossing**
 
-Create `src/phonograph-intake.js`. Keep the public shape small:
+Create `src/phonograph-intake.js` with constants:
 
 ```js
-import { hpHashCanonical, liveHashCanonical } from './canonical-json.js';
-
 const PERFORMANCE_SCHEMA = 'haunted-phonograph/resolved-performance/v1';
 const RECEIPT_SCHEMA = 'haunted-phonograph/receipt/v1';
 const LIVE_INTENT_SCHEMA = 'static-live.live-intent/v0.1';
 const PACKET_SCHEMA = 'static-live.performance-packet/v0.1';
 const CROSSING_SCHEMA = 'static-live.phono-live-crossing-receipt/v0.1';
 const ADAPTER = Object.freeze({ id: 'static-live.phonograph-intake', version: '0.1' });
-
-function fail(code, message) {
-  const error = new TypeError(message);
-  error.code = code;
-  throw error;
-}
-
-function requireNonEmptyString(value, label) {
-  if (typeof value !== 'string' || value.trim().length === 0) fail('INVALID_LIVE_INTENT', `${label} must be a non-empty string`);
-}
-
-export function validateLiveIntent(liveIntent) {
-  if (!liveIntent || typeof liveIntent !== 'object' || Array.isArray(liveIntent)) fail('INVALID_LIVE_INTENT', 'Live Intent must be an object');
-  if (liveIntent.version !== LIVE_INTENT_SCHEMA) fail('INVALID_LIVE_INTENT', `Live Intent must use ${LIVE_INTENT_SCHEMA}`);
-  requireNonEmptyString(liveIntent.song?.id, 'song.id');
-  requireNonEmptyString(liveIntent.song?.title, 'song.title');
-  requireNonEmptyString(liveIntent.meter, 'meter');
-  if (!Array.isArray(liveIntent.landmarks) || !Array.isArray(liveIntent.requiredCapabilities) || !Array.isArray(liveIntent.stems)) {
-    fail('INVALID_LIVE_INTENT', 'landmarks, requiredCapabilities, and stems must be arrays');
-  }
-  const capabilitySet = new Set(liveIntent.requiredCapabilities);
-  if (capabilitySet.size !== liveIntent.requiredCapabilities.length) fail('INVALID_LIVE_INTENT', 'requiredCapabilities must be unique');
-  const stemIds = new Set();
-  const fallbackCapabilities = new Set();
-  for (const stem of liveIntent.stems) {
-    requireNonEmptyString(stem?.id, 'stem.id');
-    if (stemIds.has(stem.id)) fail('INVALID_LIVE_INTENT', `duplicate stem id: ${stem.id}`);
-    stemIds.add(stem.id);
-    if (stem.kind === 'fallback') {
-      requireNonEmptyString(stem.coversCapability, `stem ${stem.id}.coversCapability`);
-      if (!capabilitySet.has(stem.coversCapability)) fail('INVALID_LIVE_INTENT', `fallback ${stem.id} covers undeclared capability`);
-      if (fallbackCapabilities.has(stem.coversCapability)) fail('INVALID_LIVE_INTENT', `multiple fallbacks cover ${stem.coversCapability}`);
-      fallbackCapabilities.add(stem.coversCapability);
-    }
-  }
-  return true;
-}
 ```
 
-Then implement `intakePhonographPerformance()` in this exact order:
+Validation order must be:
 
 ```text
-validate performance schema
-validate receipt schema + completed status
-compare performance.sourceHash to receipt.sourceHash
-compare performance.scoreHash to receipt.scoreHash
-verify hpHashCanonical(performance) == receipt.resolvedPerformanceHash
-validate positive finite performance.tempoBpm
-validate LiveIntent
-compute upstreamReceiptHash = hpHashCanonical(phonographReceipt)
-build packet only from the fixed ownership table
-compute liveIntentHash + packet hash with liveHashCanonical
-build crossing receipt
-return frozen { packet, crossingReceipt }
+performance schema
+receipt schema
+receipt completed status
+sourceHash equality
+scoreHash equality
+hpHashCanonical(performance) equality to receipt.resolvedPerformanceHash
+positive finite performance.tempoBpm
+LiveIntent validation
+packet composition
+crossing receipt composition
 ```
 
-Use this crossing receipt shape:
+`validateLiveIntent()` must:
+
+```text
+require version == static-live.live-intent/v0.1
+require non-empty song.id, song.title, meter
+require arrays for landmarks, requiredCapabilities, stems
+require unique non-empty requiredCapabilities
+require unique stem ids
+require stem.kind in {always,fallback}
+require non-empty stem.path and stem.output
+for fallback: require coversCapability in requiredCapabilities and unique coverage
+require cues to be a plain object with click and voice keys; null is allowed
+never require every capability to have a fallback
+```
+
+Compose the packet exactly from the ownership table:
 
 ```js
-{
+const upstreamReceiptHash = hpHashCanonical(phonographReceipt);
+const packet = {
+  version: PACKET_SCHEMA,
+  song: {
+    id: liveIntent.song.id,
+    title: liveIntent.song.title,
+    sourceReceipt: `hp-receipt:${upstreamReceiptHash}`,
+  },
+  tempo: { bpm: performance.tempoBpm, meter: liveIntent.meter },
+  landmarks: structuredClone(liveIntent.landmarks),
+  requiredCapabilities: structuredClone(liveIntent.requiredCapabilities),
+  stems: structuredClone(liveIntent.stems),
+  cues: structuredClone(liveIntent.cues),
+};
+```
+
+Compose the crossing receipt:
+
+```js
+const crossingReceipt = {
   version: CROSSING_SCHEMA,
   status: 'completed',
   adapter: ADAPTER,
@@ -442,50 +395,21 @@ Use this crossing receipt shape:
   retainedUncertaintyRefs: [...(performance.retainedUncertaintyRefs ?? [])],
   liveIntentHash: liveHashCanonical(liveIntent),
   performancePacketHash: liveHashCanonical(packet),
-}
+};
 ```
 
-The Performance Packet must be:
+Deep-freeze returned objects. Do not copy notes/channels/events into stage capability declarations.
 
-```js
-{
-  version: PACKET_SCHEMA,
-  song: {
-    id: liveIntent.song.id,
-    title: liveIntent.song.title,
-    sourceReceipt: `hp-receipt:${upstreamReceiptHash}`,
-  },
-  tempo: { bpm: performance.tempoBpm, meter: liveIntent.meter },
-  landmarks: structuredClone(liveIntent.landmarks),
-  requiredCapabilities: structuredClone(liveIntent.requiredCapabilities),
-  stems: structuredClone(liveIntent.stems),
-  cues: structuredClone(liveIntent.cues),
-}
-```
-
-Do not copy performance events, MIDI channels, pitches, or performer guesses into stage declarations.
-
-- [ ] **Step 5: Run focused intake tests and verify GREEN**
-
-Run:
+- [ ] **Step 5: Verify GREEN and regressions**
 
 ```bash
 node --test test/canonical-json.test.js test/phonograph-intake.test.js
+npm test
 ```
 
 Expected: PASS.
 
-- [ ] **Step 6: Run full suite**
-
-Run:
-
-```bash
-npm test
-```
-
-Expected: all tests PASS; existing LIVE-001 behavior unchanged.
-
-- [ ] **Step 7: Commit Task 2**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add src/phonograph-intake.js test/phonograph-intake.test.js
@@ -494,31 +418,23 @@ git commit -m "feat: add verified Phonograph intake boundary"
 
 ---
 
-### Task 3: Import the exact Haunted Phonograph specimen and prove four room configurations
+### Task 3: Real upstream fixture and four room configurations
 
 **Files:**
-- Create: `fixtures/phono-live-001/resolved-performance.json`
-- Create: `fixtures/phono-live-001/phonograph-receipt.json`
-- Create: `fixtures/phono-live-001/live-intent.json`
-- Create: `fixtures/phono-live-001/live-intent-broken.json`
-- Create: `fixtures/phono-live-001/configurations/pl2.json`
-- Create: `fixtures/phono-live-001/configurations/pl1.json`
-- Create: `fixtures/phono-live-001/configurations/pl0.json`
-- Create: `fixtures/phono-live-001/configurations/broken.json`
-- Create: `fixtures/phono-live-001/UPSTREAM.md`
+- Create all `fixtures/phono-live-001/*` files listed in the File Map.
 - Create: `test/phono-live-001.test.js`
 
 **Interfaces:**
-- Consumes: exact Haunted Phonography main commit `3ea4c141ffa3abe18f06019c0b0f2dd62ba20dd7`.
-- Consumes: `intakePhonographPerformance()` and existing `compileStageProjection()`.
-- Produces: checked-in immutable fixture evidence with no runtime GitHub/Phonograph dependency.
+- Pin upstream Haunted Phonography commit `3ea4c141ffa3abe18f06019c0b0f2dd62ba20dd7`.
+- Runtime remains independent of that repository.
 
-- [ ] **Step 1: Export the exact upstream performance + receipt from the pinned Haunted Phonograph commit**
+- [ ] **Step 1: Export the exact upstream performance and receipt**
 
-From the Static Live worktree root, preserve its path and use an isolated temporary clone:
+From the Static Live worktree root:
 
 ```bash
 STATIC_LIVE_ROOT="$PWD"
+export STATIC_LIVE_ROOT
 TMP_PHONO="$(mktemp -d)"
 git clone https://github.com/the-static-collective/the-haunted-phonography.git "$TMP_PHONO"
 cd "$TMP_PHONO"
@@ -537,35 +453,27 @@ import { encodeMidi } from './src/midi.mjs';
 import { buildReceipt } from './src/receipt.mjs';
 import { canonicalStringify } from './src/provenance.mjs';
 
-const staticLiveRoot = process.env.STATIC_LIVE_ROOT;
-const sourcePath = resolve('test/fixtures/specimen-001.wav');
-const observationsPath = resolve('test/fixtures/specimen-001.observations.json');
-const source = await identifySource(sourcePath);
-const declaration = JSON.parse(await readFile(observationsPath, 'utf8'));
+const root = process.env.STATIC_LIVE_ROOT;
+const source = await identifySource(resolve('test/fixtures/specimen-001.wav'));
+const declaration = JSON.parse(await readFile(resolve('test/fixtures/specimen-001.observations.json'), 'utf8'));
 const observations = admitObservations({ source, declaration });
 const score = buildScore({ source, observations });
 const mutationResult = mutateScore({ score, seed: 'seed-001' });
 const performance = resolvePerformance({ score, observations, mutationResult });
 const midiBytes = encodeMidi(performance);
 const receipt = buildReceipt({ source, observations, score, mutationResult, performance, midiBytes });
-await writeFile(`${staticLiveRoot}/fixtures/phono-live-001/resolved-performance.json`, `${canonicalStringify(performance)}\n`);
-await writeFile(`${staticLiveRoot}/fixtures/phono-live-001/phonograph-receipt.json`, `${canonicalStringify(receipt)}\n`);
+await writeFile(`${root}/fixtures/phono-live-001/resolved-performance.json`, `${canonicalStringify(performance)}\n`);
+await writeFile(`${root}/fixtures/phono-live-001/phonograph-receipt.json`, `${canonicalStringify(receipt)}\n`);
 NODE
 cd "$STATIC_LIVE_ROOT"
 rm -rf "$TMP_PHONO"
 ```
 
-Export `STATIC_LIVE_ROOT` for the heredoc process before running the node step:
+Do not hand-edit the two exported JSON files.
 
-```bash
-export STATIC_LIVE_ROOT
-```
+- [ ] **Step 2: Record upstream provenance**
 
-Expected: two checked-in-source candidates appear under `fixtures/phono-live-001/`; do not hand-edit them.
-
-- [ ] **Step 2: Record fixture provenance**
-
-Create `fixtures/phono-live-001/UPSTREAM.md` with the exact source repository, commit, source fixture names, seed, and the statement:
+Create `fixtures/phono-live-001/UPSTREAM.md`:
 
 ```markdown
 # PHONO-LIVE-001 upstream fixture
@@ -575,14 +483,16 @@ Create `fixtures/phono-live-001/UPSTREAM.md` with the exact source repository, c
 - Source fixture: `test/fixtures/specimen-001.wav`
 - Observation fixture: `test/fixtures/specimen-001.observations.json`
 - Mutation seed: `seed-001`
-- Exported objects: exact canonical `ResolvedPerformance` and exact completed Phonograph receipt reconstructed from the pinned source/observation inputs.
+- Exported objects: exact canonical `ResolvedPerformance` and exact completed Phonograph receipt reconstructed from the pinned inputs.
 
 These files are fixture evidence. Static Live does not fetch Haunted Phonography at runtime.
 ```
 
-- [ ] **Step 3: Add explicit Live Intent fixtures**
+- [ ] **Step 3: Add Live Intent fixtures**
 
-Create `fixtures/phono-live-001/live-intent.json`:
+Create normal `live-intent.json` with `melody.live` and `pulse.live`, both with fallback stems. Create `live-intent-broken.json` with the same two required capabilities but **only** `melody-fallback`; `pulse.live` intentionally has no fallback. Both use meter `4/4`, landmarks `entry/body/exit`, and `{ "click": null, "voice": null }` cues.
+
+Use this exact normal intent:
 
 ```json
 {
@@ -599,72 +509,35 @@ Create `fixtures/phono-live-001/live-intent.json`:
 }
 ```
 
-Create `fixtures/phono-live-001/live-intent-broken.json` as a **valid** intent whose `pulse.live` capability has no fallback:
+- [ ] **Step 4: Add room configurations**
+
+`pl2.json`:
 
 ```json
-{
-  "version": "static-live.live-intent/v0.1",
-  "song": { "id": "phono-live-001-broken", "title": "PHONO-LIVE-001 / BROKEN" },
-  "meter": "4/4",
-  "landmarks": ["entry", "body", "exit"],
-  "requiredCapabilities": ["melody.live", "pulse.live"],
-  "stems": [
-    { "id": "melody-fallback", "kind": "fallback", "coversCapability": "melody.live", "path": "stems/melody.wav", "output": "foh" }
-  ],
-  "cues": { "click": null, "voice": null }
-}
+{"id":"pl2","label":"PL/2","performers":[{"id":"human-a","label":"Human A","capabilities":["melody.live"]},{"id":"human-b","label":"Human B","capabilities":["pulse.live"]}]}
 ```
 
-- [ ] **Step 4: Add exact room configurations**
-
-`fixtures/phono-live-001/configurations/pl2.json`:
+`pl1.json`:
 
 ```json
-{
-  "id": "pl2",
-  "label": "PL/2",
-  "performers": [
-    { "id": "human-a", "label": "Human A", "capabilities": ["melody.live"] },
-    { "id": "human-b", "label": "Human B", "capabilities": ["pulse.live"] }
-  ]
-}
+{"id":"pl1","label":"PL/1","performers":[{"id":"human-a","label":"Human A","capabilities":["melody.live"]}]}
 ```
 
-`fixtures/phono-live-001/configurations/pl1.json`:
+`pl0.json`:
 
 ```json
-{
-  "id": "pl1",
-  "label": "PL/1",
-  "performers": [
-    { "id": "human-a", "label": "Human A", "capabilities": ["melody.live"] }
-  ]
-}
+{"id":"pl0","label":"PL/0","performers":[]}
 ```
 
-`fixtures/phono-live-001/configurations/pl0.json`:
+`broken.json`:
 
 ```json
-{
-  "id": "pl0",
-  "label": "PL/0",
-  "performers": []
-}
+{"id":"broken","label":"PL/BROKEN","performers":[]}
 ```
 
-`fixtures/phono-live-001/configurations/broken.json`:
+- [ ] **Step 5: Write the integration test**
 
-```json
-{
-  "id": "broken",
-  "label": "PL/BROKEN",
-  "performers": []
-}
-```
-
-- [ ] **Step 5: Write the real-fixture integration test**
-
-Create `test/phono-live-001.test.js` following the existing fixture-loading convention:
+Create `test/phono-live-001.test.js`:
 
 ```js
 import test from 'node:test';
@@ -674,27 +547,23 @@ import { hpHashCanonical } from '../src/canonical-json.js';
 import { intakePhonographPerformance } from '../src/phonograph-intake.js';
 import { compileStageProjection } from '../src/compiler.js';
 
-const loadJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
-const performance = loadJson('fixtures/phono-live-001/resolved-performance.json');
-const receipt = loadJson('fixtures/phono-live-001/phonograph-receipt.json');
-const liveIntent = loadJson('fixtures/phono-live-001/live-intent.json');
-const brokenIntent = loadJson('fixtures/phono-live-001/live-intent-broken.json');
+const load = (path) => JSON.parse(readFileSync(path, 'utf8'));
+const performance = load('fixtures/phono-live-001/resolved-performance.json');
+const receipt = load('fixtures/phono-live-001/phonograph-receipt.json');
+const intent = load('fixtures/phono-live-001/live-intent.json');
+const brokenIntent = load('fixtures/phono-live-001/live-intent-broken.json');
+const config = (id) => load(`fixtures/phono-live-001/configurations/${id}.json`);
 
-const configs = Object.fromEntries(['pl2', 'pl1', 'pl0', 'broken'].map((id) => [
-  id,
-  loadJson(`fixtures/phono-live-001/configurations/${id}.json`),
-]));
-
-test('checked-in Phonograph fixture verifies against its real upstream receipt', () => {
+test('real upstream fixture verifies and crosses', () => {
   assert.equal(hpHashCanonical(performance), receipt.resolvedPerformanceHash);
-  assert.doesNotThrow(() => intakePhonographPerformance({ performance, phonographReceipt: receipt, liveIntent }));
+  assert.doesNotThrow(() => intakePhonographPerformance({ performance, phonographReceipt: receipt, liveIntent: intent }));
 });
 
-test('one musical descendant truthfully compiles as PL/2, PL/1, and PL/0', () => {
-  const { packet } = intakePhonographPerformance({ performance, phonographReceipt: receipt, liveIntent });
-  const pl2 = compileStageProjection(packet, configs.pl2);
-  const pl1 = compileStageProjection(packet, configs.pl1);
-  const pl0 = compileStageProjection(packet, configs.pl0);
+test('PL/2, PL/1, and PL/0 remain truthful and playable', () => {
+  const { packet } = intakePhonographPerformance({ performance, phonographReceipt: receipt, liveIntent: intent });
+  const pl2 = compileStageProjection(packet, config('pl2'));
+  const pl1 = compileStageProjection(packet, config('pl1'));
+  const pl0 = compileStageProjection(packet, config('pl0'));
 
   assert.equal(pl2.playable, true);
   assert.deepEqual(pl2.liveContributions.map((x) => x.performerId), ['human-a', 'human-b']);
@@ -709,102 +578,64 @@ test('one musical descendant truthfully compiles as PL/2, PL/1, and PL/0', () =>
   assert.deepEqual(pl0.fallbackCoverage.map((x) => x.capability), ['melody.live', 'pulse.live']);
 });
 
-test('PL/BROKEN crosses successfully but fails closed only at room compilation', () => {
+test('PL/BROKEN crosses but fails closed at stage compilation', () => {
   const { packet } = intakePhonographPerformance({ performance, phonographReceipt: receipt, liveIntent: brokenIntent });
-  const projection = compileStageProjection(packet, configs.broken);
+  const projection = compileStageProjection(packet, config('broken'));
   assert.equal(projection.playable, false);
   assert.deepEqual(projection.unresolvedCapabilities, ['pulse.live']);
 });
 
-test('tampering the real performance is refused before entering Static Live', () => {
+test('tampering the real performance is refused before the room', () => {
   const tampered = structuredClone(performance);
   tampered.events[0].note += 1;
   assert.throws(
-    () => intakePhonographPerformance({ performance: tampered, phonographReceipt: receipt, liveIntent }),
+    () => intakePhonographPerformance({ performance: tampered, phonographReceipt: receipt, liveIntent: intent }),
     (error) => error.code === 'PHONOGRAPH_PERFORMANCE_HASH_MISMATCH',
   );
 });
 ```
 
-- [ ] **Step 6: Run integration tests and verify GREEN**
-
-Run:
+- [ ] **Step 6: Verify and commit**
 
 ```bash
 node --test test/phono-live-001.test.js
 npm test
-```
-
-Expected: all PASS.
-
-- [ ] **Step 7: Commit Task 3**
-
-```bash
 git add fixtures/phono-live-001 test/phono-live-001.test.js
 git commit -m "test: prove PHONO-LIVE-001 room incarnations"
 ```
 
+Expected: PASS.
+
 ---
 
-### Task 4: Deterministic PHONO-LIVE specimen renderer and checked-in witnesses
+### Task 4: Deterministic specimen renderer and checked-in witnesses
 
 **Files:**
 - Create: `scripts/render-phono-live-001.js`
 - Create: `test/phono-live-render.test.js`
 - Modify: `package.json`
-- Create/update generated witnesses under `examples/phono-live-001/`
+- Create/update: `examples/phono-live-001/**`
 
 **Interfaces:**
-- Produces CLI-like script: `node scripts/render-phono-live-001.js [output-dir]`.
-- Default output directory: `examples/phono-live-001`.
-- Script reads only checked-in Static Live fixtures; no network or Haunted Phonography checkout.
-- Writes `performance-packet.json`, `crossing-receipt.json`, and for each configuration `projection.json`, `setlist.md`, `routing.md`.
+- `node scripts/render-phono-live-001.js [output-dir]`
+- Default output: `examples/phono-live-001`.
+- Reads only checked-in Static Live fixtures.
 
-- [ ] **Step 1: Write failing renderer smoke test**
+- [ ] **Step 1: Write failing renderer test**
 
-Create `test/phono-live-render.test.js`:
+Test two temporary output directories, require `performance-packet.json`, `crossing-receipt.json`, and `projection.json/setlist.md/routing.md` under `pl2`, `pl1`, `pl0`, `broken`; compare the two crossing receipts and PL/1 projections byte-for-byte.
+
+Core assertion:
 
 ```js
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
-
-test('PHONO-LIVE renderer emits crossing + four room witnesses deterministically', () => {
-  const outA = mkdtempSync(join(tmpdir(), 'phono-live-a-'));
-  const outB = mkdtempSync(join(tmpdir(), 'phono-live-b-'));
-  try {
-    for (const outDir of [outA, outB]) {
-      const run = spawnSync(process.execPath, ['scripts/render-phono-live-001.js', outDir], { cwd: process.cwd(), encoding: 'utf8' });
-      assert.equal(run.status, 0, run.stderr || run.stdout);
-      assert.equal(existsSync(join(outDir, 'performance-packet.json')), true);
-      assert.equal(existsSync(join(outDir, 'crossing-receipt.json')), true);
-      for (const id of ['pl2', 'pl1', 'pl0', 'broken']) {
-        assert.equal(existsSync(join(outDir, id, 'projection.json')), true);
-        assert.equal(existsSync(join(outDir, id, 'setlist.md')), true);
-        assert.equal(existsSync(join(outDir, id, 'routing.md')), true);
-      }
-    }
-    assert.equal(
-      readFileSync(join(outA, 'crossing-receipt.json'), 'utf8'),
-      readFileSync(join(outB, 'crossing-receipt.json'), 'utf8'),
-    );
-    assert.equal(
-      readFileSync(join(outA, 'pl1', 'projection.json'), 'utf8'),
-      readFileSync(join(outB, 'pl1', 'projection.json'), 'utf8'),
-    );
-  } finally {
-    rmSync(outA, { recursive: true, force: true });
-    rmSync(outB, { recursive: true, force: true });
-  }
+const run = spawnSync(process.execPath, ['scripts/render-phono-live-001.js', outDir], {
+  cwd: process.cwd(),
+  encoding: 'utf8',
 });
+assert.equal(run.status, 0, run.stderr || run.stdout);
 ```
 
-- [ ] **Step 2: Run renderer test and verify RED**
-
-Run:
+- [ ] **Step 2: Verify RED**
 
 ```bash
 node --test test/phono-live-render.test.js
@@ -812,9 +643,9 @@ node --test test/phono-live-render.test.js
 
 Expected: FAIL because the renderer does not exist.
 
-- [ ] **Step 3: Implement the deterministic renderer**
+- [ ] **Step 3: Implement renderer**
 
-Create `scripts/render-phono-live-001.js` using only built-in APIs plus existing project functions:
+Create `scripts/render-phono-live-001.js`:
 
 ```js
 #!/usr/bin/env node
@@ -824,28 +655,26 @@ import { intakePhonographPerformance } from '../src/phonograph-intake.js';
 import { compileStageProjection } from '../src/compiler.js';
 import { renderRouting, renderSetlist } from '../src/render-stage-aids.js';
 
-const loadJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
+const load = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
-
-const outputRoot = resolve(process.argv[2] ?? 'examples/phono-live-001');
 const fixtureRoot = 'fixtures/phono-live-001';
-const performance = loadJson(`${fixtureRoot}/resolved-performance.json`);
-const phonographReceipt = loadJson(`${fixtureRoot}/phonograph-receipt.json`);
-const normalIntent = loadJson(`${fixtureRoot}/live-intent.json`);
-const brokenIntent = loadJson(`${fixtureRoot}/live-intent-broken.json`);
-const crossing = intakePhonographPerformance({ performance, phonographReceipt, liveIntent: normalIntent });
+const outputRoot = resolve(process.argv[2] ?? 'examples/phono-live-001');
+const performance = load(`${fixtureRoot}/resolved-performance.json`);
+const phonographReceipt = load(`${fixtureRoot}/phonograph-receipt.json`);
+const normalIntent = load(`${fixtureRoot}/live-intent.json`);
+const brokenIntent = load(`${fixtureRoot}/live-intent-broken.json`);
+const normalCrossing = intakePhonographPerformance({ performance, phonographReceipt, liveIntent: normalIntent });
 
 rmSync(outputRoot, { recursive: true, force: true });
 mkdirSync(outputRoot, { recursive: true });
-writeJson(resolve(outputRoot, 'performance-packet.json'), crossing.packet);
-writeJson(resolve(outputRoot, 'crossing-receipt.json'), crossing.crossingReceipt);
+writeJson(resolve(outputRoot, 'performance-packet.json'), normalCrossing.packet);
+writeJson(resolve(outputRoot, 'crossing-receipt.json'), normalCrossing.crossingReceipt);
 
 for (const id of ['pl2', 'pl1', 'pl0', 'broken']) {
-  const configuration = loadJson(`${fixtureRoot}/configurations/${id}.json`);
-  const { packet } = id === 'broken'
+  const crossing = id === 'broken'
     ? intakePhonographPerformance({ performance, phonographReceipt, liveIntent: brokenIntent })
-    : crossing;
-  const projection = compileStageProjection(packet, configuration);
+    : normalCrossing;
+  const projection = compileStageProjection(crossing.packet, load(`${fixtureRoot}/configurations/${id}.json`));
   const outDir = resolve(outputRoot, id);
   mkdirSync(outDir, { recursive: true });
   writeJson(resolve(outDir, 'projection.json'), projection);
@@ -854,80 +683,47 @@ for (const id of ['pl2', 'pl1', 'pl0', 'broken']) {
 }
 ```
 
-Do not add any audio renderer or Phonograph runtime dependency.
-
 - [ ] **Step 4: Add package script**
 
-Modify only the `scripts` block in `package.json`:
+Make `package.json` scripts exactly include:
 
 ```json
-{
-  "scripts": {
-    "test": "node --test",
-    "stage": "node src/cli.js",
-    "phono-live:001": "node scripts/render-phono-live-001.js"
-  }
-}
+"phono-live:001": "node scripts/render-phono-live-001.js"
 ```
 
-- [ ] **Step 5: Run renderer tests and full suite**
+Preserve existing `test` and `stage` scripts.
 
-Run:
+- [ ] **Step 5: Verify, render, mechanically inspect, commit**
 
 ```bash
 node --test test/phono-live-render.test.js
 npm test
-```
-
-Expected: PASS.
-
-- [ ] **Step 6: Regenerate and inspect the checked-in examples**
-
-Run:
-
-```bash
 npm run phono-live:001
-```
-
-Verify mechanically:
-
-```bash
 node -e "const p=require('./examples/phono-live-001/pl2/projection.json'); if(!p.playable||p.liveContributions.length!==2) process.exit(1)"
 node -e "const p=require('./examples/phono-live-001/pl1/projection.json'); if(!p.playable||p.fallbackCoverage.map(x=>x.capability).join(',')!=='pulse.live') process.exit(1)"
 node -e "const p=require('./examples/phono-live-001/pl0/projection.json'); if(!p.playable||p.liveContributions.length!==0||p.fallbackCoverage.length!==2) process.exit(1)"
 node -e "const p=require('./examples/phono-live-001/broken/projection.json'); if(p.playable||p.unresolvedCapabilities.join(',')!=='pulse.live') process.exit(1)"
-```
-
-Expected: all commands exit 0.
-
-- [ ] **Step 7: Commit Task 4**
-
-```bash
 git add scripts/render-phono-live-001.js test/phono-live-render.test.js package.json examples/phono-live-001
 git commit -m "feat: render PHONO-LIVE-001 crossing witnesses"
 ```
 
+Expected: all commands exit 0.
+
 ---
 
-### Task 5: Document the crossing and run completion verification
+### Task 5: README and completion verification
 
 **Files:**
 - Modify: `README.md`
 
-**Interfaces:**
-- Documentation must preserve the authority split: Phonograph owns musical descendant/provenance; Live Intent owns stage declaration; Static Live owns room projection.
-- Documentation must not imply that PL/0 is equivalent to a human live performance.
+- [ ] **Step 1: Add PHONO-LIVE-001 documentation**
 
-- [ ] **Step 1: Add a concise PHONO-LIVE-001 README section**
-
-Add after the LIVE-001 section:
+Add this section after LIVE-001:
 
 ```markdown
 ## PHONO-LIVE-001 — THE SONG WALKS INTO THE ROOM
 
-Static Live can now accept one exact Haunted Phonograph `ResolvedPerformance` plus its completed receipt, verify the upstream ancestry, combine it with explicit human-authored `LiveIntent`, and emit a normal Static Live Performance Packet.
-
-The boundary is deliberate:
+Static Live can accept one exact Haunted Phonograph `ResolvedPerformance` plus its completed receipt, verify the upstream ancestry, combine it with explicit human-authored `LiveIntent`, and emit a normal Static Live Performance Packet.
 
 - **Haunted Phonography says what music emerged.**
 - **Live Intent says how we choose to embody it.**
@@ -941,22 +737,16 @@ Run the checked-in specimen:
 npm run phono-live:001
 ```
 
-The specimen proves the same musical descendant as PL/2, PL/1, PL/0, and PL/BROKEN. PL/BROKEN crosses successfully as a valid packet and then fails closed at stage compilation because one required capability has neither a live provider nor a declared fallback.
+The specimen proves PL/2, PL/1, PL/0, and PL/BROKEN. PL/BROKEN crosses successfully as a valid packet, then fails closed at stage compilation because one required capability has neither a live provider nor a declared fallback. PL/0 demonstrates executable fallback coverage, not equivalence to a human live performance.
 
 Checked-in witnesses live under `examples/phono-live-001/`.
-```
 
-Also add design/plan links:
-
-```markdown
 Design: `docs/superpowers/specs/2026-09-14-phono-live-001-song-walks-into-room-design.md`
 
 Plan: `docs/superpowers/plans/2026-09-14-phono-live-001-song-walks-into-room.md`
 ```
 
-- [ ] **Step 2: Run the complete verification surface**
-
-Run:
+- [ ] **Step 2: Run full verification twice around specimen regeneration**
 
 ```bash
 npm test
@@ -964,40 +754,30 @@ npm run phono-live:001
 npm test
 ```
 
-Expected: every command exits 0.
+Expected: PASS.
 
-- [ ] **Step 3: Verify no forbidden coupling landed**
-
-Run:
+- [ ] **Step 3: Verify forbidden coupling did not land**
 
 ```bash
 grep -R "the-haunted-phonography" -n src scripts package.json || true
 grep -R "guitar.live\|drums.live\|bass.live\|lead-vocal.live" -n src/phonograph-intake.js || true
+git diff main...HEAD -- src/canonical-json.js src/phonograph-intake.js src/compiler.js package.json README.md test fixtures examples scripts docs/superpowers/specs docs/superpowers/plans
 ```
 
 Expected:
 
 - no runtime import/package dependency on Haunted Phonography;
-- no hard-coded conventional instrument capability inference in the Phonograph adapter.
+- no hard-coded conventional-instrument inference in the adapter;
+- `src/compiler.js` unchanged by PHONO-LIVE-specific logic.
 
-Then inspect the final diff:
-
-```bash
-git diff main...HEAD -- src compiler.js package.json README.md test fixtures examples scripts docs/superpowers/specs docs/superpowers/plans
-```
-
-Confirm `src/compiler.js` is unchanged by PHONO-LIVE-specific logic.
-
-- [ ] **Step 4: Commit Task 5**
+- [ ] **Step 4: Commit documentation**
 
 ```bash
 git add README.md
 git commit -m "docs: explain PHONO-LIVE-001 room crossing"
 ```
 
-- [ ] **Step 5: Final completion check**
-
-Run:
+- [ ] **Step 5: Final clean-tree verification**
 
 ```bash
 git status --short
@@ -1006,6 +786,6 @@ npm test
 
 Expected: clean working tree and all tests PASS.
 
-The implementation is complete only when this statement is supported by the checked-in fixtures and tests:
+PHONO-LIVE-001 is complete only when the checked-in evidence supports:
 
 > One exact Haunted Phonograph `ResolvedPerformance` and its matching receipt can be combined with explicit Live Intent to produce a deterministic, receipted Static Live Performance Packet; that packet lawfully compiles under PL/2, PL/1, PL/0, and PL/BROKEN without inventing musical ancestry or human participation.
