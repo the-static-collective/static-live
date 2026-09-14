@@ -5,6 +5,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+const witnessPaths = [
+  'performance-packet.json',
+  'crossing-receipt.json',
+  ...['pl2', 'pl1', 'pl0', 'broken'].flatMap((id) => [
+    `${id}/projection.json`,
+    `${id}/setlist.md`,
+    `${id}/routing.md`,
+  ]),
+];
+
 function render(outDir) {
   const run = spawnSync(process.execPath, ['scripts/render-phono-live-001.js', outDir], {
     cwd: process.cwd(),
@@ -25,19 +35,16 @@ test('PHONO-LIVE renderer emits deterministic crossing and room witnesses', () =
     render(first);
     render(second);
 
-    for (const root of [first, second]) {
-      assert.equal(existsSync(join(root, 'performance-packet.json')), true);
-      assert.equal(existsSync(join(root, 'crossing-receipt.json')), true);
-      for (const id of ['pl2', 'pl1', 'pl0', 'broken']) {
-        assert.equal(existsSync(join(root, id, 'projection.json')), true);
-        assert.equal(existsSync(join(root, id, 'setlist.md')), true);
-        assert.equal(existsSync(join(root, id, 'routing.md')), true);
-      }
+    for (const relativePath of witnessPaths) {
+      assert.equal(existsSync(join(first, relativePath)), true);
+      assert.equal(existsSync(join(second, relativePath)), true);
+      assert.equal(read(join(first, relativePath)), read(join(second, relativePath)));
+      assert.equal(
+        read(join(first, relativePath)),
+        read(join('examples/phono-live-001', relativePath)),
+        `checked-in witness drifted: ${relativePath}`,
+      );
     }
-
-    assert.equal(read(join(first, 'crossing-receipt.json')), read(join(second, 'crossing-receipt.json')));
-    assert.equal(read(join(first, 'performance-packet.json')), read(join(second, 'performance-packet.json')));
-    assert.equal(read(join(first, 'pl1', 'projection.json')), read(join(second, 'pl1', 'projection.json')));
 
     const broken = JSON.parse(read(join(first, 'broken', 'projection.json')));
     assert.equal(broken.playable, false);
