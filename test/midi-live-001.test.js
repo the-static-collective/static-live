@@ -94,3 +94,11 @@ test('CLI emits machine and human MIDI control artifacts', () => {
     rmSync(outDir, { recursive: true, force: true });
   }
 });
+
+test('packets without MIDI declarations preserve the legacy projection shape', () => {
+  const legacyPacket = { ...packet };
+  delete legacyPacket.midiControls;
+
+  const projection = compileStageProjection(legacyPacket, configuration);
+  assert.equal('midiControls' in projection, false);
+});
