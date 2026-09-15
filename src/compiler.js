@@ -47,6 +47,22 @@ export function compileStageProjection(packet, configuration) {
     (stem) => stem.kind === 'fallback' && !activeFallbackIds.has(stem.id),
   );
 
+  const midiControls = (packet.midiControls ?? []).flatMap((control) => {
+    const providers = liveContributions
+      .filter((contribution) => contribution.capabilities.includes(control.capability))
+      .map(({ performerId, label }) => ({ performerId, label }));
+
+    if (providers.length === 0) return [];
+
+    return [{
+      id: control.id,
+      capability: control.capability,
+      deviceHint: control.deviceHint,
+      providers,
+      bindings: control.bindings,
+    }];
+  });
+
   return {
     version: 'static-live.stage-projection/v0.1',
     song: packet.song,
@@ -63,5 +79,6 @@ export function compileStageProjection(packet, configuration) {
     disabledFallbackStems,
     fallbackCoverage,
     unresolvedCapabilities,
+    midiControls,
   };
 }
