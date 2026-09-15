@@ -63,6 +63,23 @@ Design: `docs/superpowers/specs/2026-09-14-phono-live-001-song-walks-into-room-d
 
 Plan: `docs/superpowers/plans/2026-09-14-phono-live-001-song-walks-into-room.md`
 
+## MIDI-LIVE-001 — THE BAND HAS HANDLES
+
+A Performance Packet may declare a MIDI control surface as stage intent. The map becomes active only when the real-night configuration explicitly includes a performer providing the declared capability, such as `midi-controller.live`.
+
+The first specimen uses an Alesis-shaped control surface with declared note and CC bindings for a drum-stem toggle, section advance, haunt intensity, and mutation depth. The device hint is descriptive rather than authoritative: incoming MIDI does not identify a performer, and Static Live does not listen to the device directly.
+
+Compile the specimen:
+
+```bash
+node src/cli.js compile \
+  fixtures/midi-live-001/song.json \
+  fixtures/midi-live-001/configurations/alesis-duo.json \
+  --out build/midi-live-001
+```
+
+The resulting `midi-map.json` is a machine-readable handoff for ordinary stage software. `controls.md` is the human-readable control sheet. Both preserve the explicitly declared performer attribution from the stage projection.
+
 ## Quick start
 
 Requires Node.js 22+ and no external packages.
@@ -87,6 +104,8 @@ build/sc2/
   projection.json
   setlist.md
   routing.md
+  midi-map.json
+  controls.md
 ```
 
 Checked-in examples for SC/4, SC/3, and SC/2 live under `examples/live-001/`.
@@ -142,13 +161,14 @@ The compiler intersects each performer's declared capabilities with the song's r
 - capability-scoped fallback coverage;
 - unresolved required capabilities;
 - the final `playable` verdict;
-- song timing/cue metadata needed by the stage aids.
+- song timing/cue metadata needed by the stage aids;
+- declared MIDI control maps when the packet supplies them and a present performer provides their capability.
 
-`setlist.md` and `routing.md` are derived stage aids from that projection.
+`setlist.md`, `routing.md`, and `controls.md` are derived stage aids from that projection. `midi-map.json` is the machine-readable MIDI control handoff.
 
 ## Boundary
 
-LIVE-001 intentionally does not implement MIDI/OSC device control, audio playback, monitor mixing, network sync, arrangement generation, or cross-project authority semantics. The compiler emits deterministic instructions and receipts; ordinary stage software emits sound.
+Static Live compiles declared MIDI control maps, but intentionally does not implement live MIDI/OSC device I/O, audio playback, monitor mixing, network sync, arrangement generation, or cross-project authority semantics. The compiler emits deterministic instructions and receipts; ordinary stage software emits sound and executes device control.
 
 Design: `docs/superpowers/specs/2026-09-13-live-001-band-can-lose-a-limb-design.md`
 
