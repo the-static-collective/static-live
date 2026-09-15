@@ -58,6 +58,8 @@ export function compileStageProjection(packet, configuration) {
       id: control.id,
       capability: control.capability,
       deviceHint: control.deviceHint,
+      ...(control.deviceProfile ? { deviceProfile: control.deviceProfile } : {}),
+      ...(control.routingMode ? { routingMode: control.routingMode } : {}),
       providers,
       bindings: control.bindings,
     }];
