@@ -79,6 +79,6 @@ export function compileStageProjection(packet, configuration) {
     disabledFallbackStems,
     fallbackCoverage,
     unresolvedCapabilities,
-    midiControls,
+    ...(Array.isArray(packet.midiControls) ? { midiControls } : {}),
   };
 }
