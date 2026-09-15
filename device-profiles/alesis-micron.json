@@ -1,0 +1,100 @@
+{
+  "version": "static-live.midi-device-profile/v0.1",
+  "id": "alesis-micron",
+  "label": "Alesis Micron",
+  "model": "Micron (Q02)",
+  "capabilities": [
+    "synth.live",
+    "midi-controller.live",
+    "midi-clock.slave",
+    "audio-processor.live"
+  ],
+  "midi": {
+    "transport": "5-pin-din",
+    "ports": ["in", "out", "thru"],
+    "usb": false,
+    "externalClock": {
+      "receive": true
+    }
+  },
+  "localControl": {
+    "modes": ["on", "off", "off+send-ptns"],
+    "sequencerRecommendation": "off"
+  },
+  "controls": {
+    "keys": {
+      "kind": "37-key-velocity-keybed",
+      "role": "musical",
+      "wire": { "status": "documented", "protocol": "midi-note" }
+    },
+    "pitch": {
+      "kind": "pitch-wheel",
+      "role": "musical",
+      "wire": { "status": "documented", "protocol": "pitch-bend" }
+    },
+    "m1": {
+      "kind": "modulation-slider",
+      "role": "assignable",
+      "wire": {
+        "status": "hardware-observation-required",
+        "communityHint": "commonly reported as modulation/CC1"
+      }
+    },
+    "m2": {
+      "kind": "modulation-slider",
+      "role": "assignable",
+      "wire": {
+        "status": "hardware-observation-required",
+        "communityHint": "commonly reported as channel pressure"
+      }
+    },
+    "x": {
+      "kind": "360-degree-parameter-knob",
+      "role": "assignable",
+      "assignment": "program-parameter",
+      "wire": {
+        "status": "hardware-observation-required",
+        "communityHint": "parameter-dependent NRPN"
+      }
+    },
+    "y": {
+      "kind": "360-degree-parameter-knob",
+      "role": "assignable",
+      "assignment": "program-parameter",
+      "wire": {
+        "status": "hardware-observation-required",
+        "communityHint": "parameter-dependent NRPN"
+      }
+    },
+    "z": {
+      "kind": "360-degree-parameter-knob",
+      "role": "assignable",
+      "assignment": "program-parameter",
+      "wire": {
+        "status": "hardware-observation-required",
+        "communityHint": "parameter-dependent NRPN"
+      }
+    }
+  },
+  "audio": {
+    "inputs": "stereo-balanced-1/4-inch-trs",
+    "outputs": ["main-stereo", "aux-stereo", "headphones"]
+  },
+  "evidence": [
+    {
+      "authority": "manufacturer-manual",
+      "claim": "MIDI In, Out, and Thru; external MIDI clock receive; local-control modes on/off/off+send patterns",
+      "source": "Alesis Micron Reference Manual, Configuration/MIDI chapters"
+    },
+    {
+      "authority": "manufacturer-manual",
+      "claim": "M1/M2, pitch, and X/Y/Z are real-time controls; X/Y/Z may be assigned to program parameters",
+      "source": "Alesis Micron Reference Manual, First Session/Programs/Setups chapters"
+    },
+    {
+      "authority": "community-reverse-engineering",
+      "claim": "M1/M2 and X/Y/Z outgoing wire encodings have reported CC/channel-pressure/NRPN behavior",
+      "source": "retained only as hints; observe this physical unit before promotion to documented wire truth"
+    }
+  ]
+}
