@@ -12,14 +12,17 @@
   "cues": { "click": "stems/click.wav", "voice": "stems/cues.wav" },
   "midiControls": [
     {
-      "id": "alesis-main",
+      "id": "micron-stage",
       "capability": "midi-controller.live",
-      "deviceHint": "Alesis",
+      "deviceHint": "Alesis Micron",
+      "deviceProfile": "alesis-micron/v0.1",
+      "routingMode": "sequencer-routed",
       "bindings": [
-        { "input": { "type": "note", "note": 36, "channel": 1 }, "action": "stem.drums.toggle" },
-        { "input": { "type": "note", "note": 38, "channel": 1 }, "action": "section.next" },
-        { "input": { "type": "cc", "controller": 1, "channel": 1 }, "action": "haunt.intensity" },
-        { "input": { "type": "cc", "controller": 2, "channel": 1 }, "action": "mutation.depth" }
+        { "input": { "type": "device-control", "control": "x", "resolution": "midi-learn-required" }, "action": "haunt.intensity" },
+        { "input": { "type": "device-control", "control": "y", "resolution": "midi-learn-required" }, "action": "mutation.depth" },
+        { "input": { "type": "device-control", "control": "z", "resolution": "midi-learn-required" }, "action": "topology.spread" },
+        { "input": { "type": "device-control", "control": "m1", "resolution": "midi-learn-required" }, "action": "band.machine.balance" },
+        { "input": { "type": "device-control", "control": "m2", "resolution": "midi-learn-required" }, "action": "fracture.pressure" }
       ]
     }
   ]
