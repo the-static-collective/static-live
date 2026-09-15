@@ -1,0 +1,26 @@
+{
+  "version": "static-live.performance-packet/v0.1",
+  "song": {
+    "id": "rocket-step-midi",
+    "title": "ROCKET STEP — MIDI LIVE",
+    "sourceReceipt": "specimen:MIDI-LIVE-001/rocket-step"
+  },
+  "tempo": { "bpm": 148, "meter": "4/4" },
+  "landmarks": ["intro", "drop", "outro"],
+  "requiredCapabilities": ["lead-vocal.live", "midi-controller.live"],
+  "stems": [],
+  "cues": { "click": "stems/click.wav", "voice": "stems/cues.wav" },
+  "midiControls": [
+    {
+      "id": "alesis-main",
+      "capability": "midi-controller.live",
+      "deviceHint": "Alesis",
+      "bindings": [
+        { "input": { "type": "note", "note": 36, "channel": 1 }, "action": "stem.drums.toggle" },
+        { "input": { "type": "note", "note": 38, "channel": 1 }, "action": "section.next" },
+        { "input": { "type": "cc", "controller": 1, "channel": 1 }, "action": "haunt.intensity" },
+        { "input": { "type": "cc", "controller": 2, "channel": 1 }, "action": "mutation.depth" }
+      ]
+    }
+  ]
+}
