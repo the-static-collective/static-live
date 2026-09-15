@@ -55,7 +55,7 @@ function describeMidiInput(input) {
 }
 
 export function renderControls(projection) {
-  const sections = projection.midiControls.map((control) => {
+  const sections = (projection.midiControls ?? []).map((control) => {
     const providers = control.providers.map((provider) => provider.label).join(', ');
     const bindings = control.bindings.map(
       (binding) => `- ${describeMidiInput(binding.input)} → ${binding.action}`,
