@@ -1,0 +1,29 @@
+{
+  "version": "static-live.performance-packet/v0.1",
+  "song": {
+    "id": "rocket-step-midi",
+    "title": "ROCKET STEP — MIDI LIVE",
+    "sourceReceipt": "specimen:MIDI-LIVE-001/rocket-step"
+  },
+  "tempo": { "bpm": 148, "meter": "4/4" },
+  "landmarks": ["intro", "drop", "outro"],
+  "requiredCapabilities": ["lead-vocal.live", "midi-controller.live"],
+  "stems": [],
+  "cues": { "click": "stems/click.wav", "voice": "stems/cues.wav" },
+  "midiControls": [
+    {
+      "id": "micron-stage",
+      "capability": "midi-controller.live",
+      "deviceHint": "Alesis Micron",
+      "deviceProfile": "alesis-micron/v0.1",
+      "routingMode": "sequencer-routed",
+      "bindings": [
+        { "input": { "type": "device-control", "control": "x", "resolution": "midi-learn-required" }, "action": "haunt.intensity" },
+        { "input": { "type": "device-control", "control": "y", "resolution": "midi-learn-required" }, "action": "mutation.depth" },
+        { "input": { "type": "device-control", "control": "z", "resolution": "midi-learn-required" }, "action": "topology.spread" },
+        { "input": { "type": "device-control", "control": "m1", "resolution": "midi-learn-required" }, "action": "band.machine.balance" },
+        { "input": { "type": "device-control", "control": "m2", "resolution": "midi-learn-required" }, "action": "fracture.pressure" }
+      ]
+    }
+  ]
+}

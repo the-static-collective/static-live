@@ -47,3 +47,34 @@ export function renderRouting(projection) {
     `- voice: ${projection.cues.voice}\n\n` +
     `## Unresolved required capabilities\n\n${unresolved}\n`;
 }
+
+function describeMidiInput(input) {
+  if (input.type === 'note') return `note ${input.note} ch ${input.channel}`;
+  if (input.type === 'cc') return `cc ${input.controller} ch ${input.channel}`;
+  if (input.type === 'device-control') {
+    return `${input.control} [${input.resolution ?? 'unresolved'}]`;
+  }
+  return `${input.type} ch ${input.channel}`;
+}
+
+export function renderControls(projection) {
+  const sections = (projection.midiControls ?? []).map((control) => {
+    const providers = control.providers.map((provider) => provider.label).join(', ');
+    const bindings = control.bindings.map(
+      (binding) => `- ${describeMidiInput(binding.input)} → ${binding.action}`,
+    ).join('\n');
+    const profile = control.deviceProfile ? `- device profile: ${control.deviceProfile}\n` : '';
+    const routingMode = control.routingMode ? `- routing mode: ${control.routingMode}\n` : '';
+
+    return `## ${control.id}\n\n` +
+      `- device hint: ${control.deviceHint}\n` +
+      `${profile}` +
+      `${routingMode}` +
+      `- capability: ${control.capability}\n` +
+      `- provider: ${providers}\n\n` +
+      `${bindings}`;
+  });
+
+  const body = sections.length === 0 ? '- none' : sections.join('\n\n');
+  return `# Controls — ${projection.song.title} / ${projection.configuration.label}\n\n${body}\n`;
+}

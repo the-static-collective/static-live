@@ -1,0 +1,8 @@
+{
+  "id": "alesis-duo",
+  "label": "Voice + Alesis",
+  "performers": [
+    { "id": "voice", "label": "Voice", "capabilities": ["lead-vocal.live"] },
+    { "id": "lu", "label": "Lu", "capabilities": ["midi-controller.live"] }
+  ]
+}

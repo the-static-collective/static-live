@@ -2,7 +2,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { compileStageProjection } from './compiler.js';
-import { renderRouting, renderSetlist } from './render-stage-aids.js';
+import { renderControls, renderRouting, renderSetlist } from './render-stage-aids.js';
 
 const usage = 'usage: node src/cli.js compile <packet.json> <configuration.json> --out <directory>';
 
@@ -29,6 +29,16 @@ function main(argv) {
   );
   writeFileSync(resolve(outputDirectory, 'setlist.md'), renderSetlist(projection));
   writeFileSync(resolve(outputDirectory, 'routing.md'), renderRouting(projection));
+  writeFileSync(
+    resolve(outputDirectory, 'midi-map.json'),
+    `${JSON.stringify({
+      version: 'static-live.midi-map/v0.1',
+      song: projection.song,
+      configuration: projection.configuration,
+      controls: projection.midiControls,
+    }, null, 2)}\n`,
+  );
+  writeFileSync(resolve(outputDirectory, 'controls.md'), renderControls(projection));
 
   return 0;
 }
