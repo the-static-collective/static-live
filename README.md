@@ -63,6 +63,35 @@ Design: `docs/superpowers/specs/2026-09-14-phono-live-001-song-walks-into-room-d
 
 Plan: `docs/superpowers/plans/2026-09-14-phono-live-001-song-walks-into-room.md`
 
+## STREAM-001 — STATIC BROADCAST
+
+STREAM-001 adds a local browser-facing control membrane over an already-configured OBS Studio installation.
+
+The volunteer-facing surface is deliberately small:
+
+```text
+GO LIVE
+CHANGE SCENE
+END + PRESERVE
+```
+
+GO LIVE starts and confirms local recording before streaming. If streaming fails after recording starts, Static Broadcast keeps the recording alive and enters `recording_only`; it never relabels that outcome as a successful stream.
+
+The control server binds `127.0.0.1` only in v0.1. OBS credentials remain server-side and the service packet contains no stream key.
+
+Run the synthetic specimen:
+
+```bash
+export STATIC_BROADCAST_OBS_PASSWORD='your-obs-websocket-secret'
+npm run stream-001:demo
+```
+
+Setup: `examples/stream-001/README.md`
+
+Design: `docs/superpowers/specs/2026-09-18-stream-001-static-broadcast-console-design.md`
+
+Plan: `docs/superpowers/plans/2026-09-18-stream-001-static-broadcast-console.md`
+
 ## Quick start
 
 Requires Node.js 22+ and no external packages.
