@@ -1,0 +1,37 @@
+{
+  "version": "static-live.broadcast-packet/v0.1",
+  "event": {
+    "id": "impact-makers-demo",
+    "title": "Sunday Service — Synthetic STREAM-001 Demo",
+    "synthetic": true
+  },
+  "obs": {
+    "url": "ws://127.0.0.1:4455",
+    "sceneCollection": "Impact Makers",
+    "standbyScene": "Standby",
+    "fallbackScene": "Fallback",
+    "allowedScenes": [
+      {
+        "id": "wide",
+        "label": "Wide",
+        "obsSceneName": "Wide"
+      },
+      {
+        "id": "speaker",
+        "label": "Speaker",
+        "obsSceneName": "Speaker"
+      },
+      {
+        "id": "scripture",
+        "label": "Scripture",
+        "obsSceneName": "Scripture"
+      }
+    ]
+  },
+  "recording": {
+    "requiredBeforeStream": true
+  },
+  "stream": {
+    "enabled": true
+  }
+}
