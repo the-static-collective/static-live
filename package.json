@@ -9,6 +9,8 @@
   "scripts": {
     "test": "node --test",
     "stage": "node src/cli.js",
-    "phono-live:001": "node scripts/render-phono-live-001.js"
+    "phono-live:001": "node scripts/render-phono-live-001.js",
+    "broadcast": "node src/broadcast-cli.js",
+    "stream-001:demo": "node src/broadcast-cli.js fixtures/stream-001/impact-makers-demo.json"
   }
 }
