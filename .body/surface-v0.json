@@ -1,0 +1,122 @@
+{
+  "schema": "body.surface/v0",
+  "organ": "static-live",
+  "owner": "the-static-collective/static-live",
+  "publication": {
+    "status": "owner-published",
+    "standard": "static-collective/body-surface/v0",
+    "scope": "interface-declaration"
+  },
+  "provides": [
+    {
+      "kind": "performance-packet",
+      "protocol": "static-live.performance-packet",
+      "version": "v0.1"
+    }
+  ],
+  "needs": [
+    {
+      "kind": "resolved-performance",
+      "protocol": "haunted-phonograph/resolved-performance",
+      "version": "v1"
+    },
+    {
+      "kind": "mutation-receipt",
+      "protocol": "haunted-phonograph/receipt",
+      "version": "v1"
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "phonograph-resolved-performance-in",
+      "direction": "accept",
+      "kind": "resolved-performance",
+      "protocol": "haunted-phonograph/resolved-performance",
+      "version": "v1"
+    },
+    {
+      "name": "phonograph-completed-receipt-in",
+      "direction": "accept",
+      "kind": "mutation-receipt",
+      "protocol": "haunted-phonograph/receipt",
+      "version": "v1"
+    },
+    {
+      "name": "performance-packet-out",
+      "direction": "emit",
+      "kind": "performance-packet",
+      "protocol": "static-live.performance-packet",
+      "version": "v0.1"
+    },
+    {
+      "name": "performance-packet-in",
+      "direction": "accept",
+      "kind": "performance-packet",
+      "protocol": "static-live.performance-packet",
+      "version": "v0.1"
+    }
+  ],
+  "measure": {
+    "declared": [
+      {
+        "dimension": "upstream-input-contract",
+        "value": "haunted-phonograph/resolved-performance/v1",
+        "unit": "protocol"
+      },
+      {
+        "dimension": "upstream-input-contract",
+        "value": "haunted-phonograph/receipt/v1",
+        "unit": "protocol"
+      },
+      {
+        "dimension": "output-contract",
+        "value": "static-live.performance-packet/v0.1",
+        "unit": "protocol"
+      },
+      {
+        "dimension": "authority-mode",
+        "value": "presence-and-capability-truthful",
+        "unit": "state"
+      }
+    ],
+    "observed": []
+  },
+  "receipts": [
+    {
+      "kind": "owner-contract",
+      "coordinate": "README.md"
+    },
+    {
+      "kind": "owner-code",
+      "coordinate": "src/phonograph-intake.js"
+    },
+    {
+      "kind": "owner-design",
+      "coordinate": "docs/superpowers/specs/2026-09-14-phono-live-001-song-walks-into-room-design.md"
+    }
+  ],
+  "residual_fog": [
+    "PHONO-LIVE-001 proves the appliance-local ResolvedPerformance v1 + receipt v1 -> Performance Packet v0.1 crossing. Extraction into a shared cross-project package and the room-recording return loop remain unresolved."
+  ],
+  "non_authorities": [
+    "presence != participation",
+    "fallback != absent-human identity",
+    "surface != playable verdict",
+    "adapter acceptance != rehearsal or performance"
+  ],
+  "evidence": [
+    {
+      "kind": "owner-readme",
+      "coordinate": "README.md"
+    },
+    {
+      "kind": "owner-code",
+      "coordinate": "src/phonograph-intake.js"
+    },
+    {
+      "kind": "owner-design",
+      "coordinate": "docs/superpowers/specs/2026-09-14-phono-live-001-song-walks-into-room-design.md"
+    }
+  ],
+  "authority": "none"
+}
