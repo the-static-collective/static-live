@@ -77,3 +77,17 @@ RECORDING ROLLBACK
 ## Boundary
 
 STREAM-001 is loopback-only. It does not provide phone/tablet LAN control, cloud relay, stream-key management, automatic OBS provisioning, archive upload, analytics, chat moderation, AI captions, or clip generation.
+
+## HOUSE local operator door (v0.1)
+
+After OBS preflight and the Static Broadcast service have started, the console exposes
+a read-only `GET /api/house/identity` response identifying the service contract
+`static-live.broadcast-house-door/v0.1`, the console path, and the event id.
+`GET /api/status` remains the project-owned source of current recording, stream,
+and controller state. These fields are descriptive, **not authentication or evidence
+of remote broadcast delivery**. HOUSE must verify both responses and show a manual
+link only for the explicitly configured loopback port.
+
+The operator still controls GO LIVE, scene selection, and END + PRESERVE **inside
+Static Broadcast**. HOUSE does not call the mutation endpoints, store OBS passwords,
+or autostart any service. No LAN, proxy, or remote access is introduced.
