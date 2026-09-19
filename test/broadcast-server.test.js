@@ -78,3 +78,19 @@ test('operator page exposes only the three primary controls plus declared scenes
     assert.doesNotMatch(html, /stream key/i);
   });
 });
+
+test('HOUSE identity exposes only a descriptive local console contract', async () => {
+  await withServer(fakeController(), async (address) => {
+    const identityResponse = await fetch(`${address.url}/api/house/identity`);
+    assert.equal(identityResponse.status, 200);
+    assert.deepEqual(await identityResponse.json(), {
+      service: 'static-live.broadcast',
+      contract: 'static-live.broadcast-house-door/v0.1',
+      consolePath: '/',
+      eventId: 'impact-makers-demo',
+    });
+    const statusResponse = await fetch(`${address.url}/api/status`);
+    assert.equal(statusResponse.status, 200);
+    assert.equal((await statusResponse.json()).event.id, 'impact-makers-demo');
+  });
+});
