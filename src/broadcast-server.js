@@ -106,6 +106,18 @@ export function createBroadcastServer({ controller, plan, host = '127.0.0.1', po
       return;
     }
 
+    // Identity is a descriptive local door contract, not authentication or readiness proof.
+    // The control plane remains entirely owned by Static Broadcast.
+    if (req.method === 'GET' && url.pathname === '/api/house/identity') {
+      json(200, {
+        service: 'static-live.broadcast',
+        contract: 'static-live.broadcast-house-door/v0.1',
+        consolePath: '/',
+        eventId: plan.event.id,
+      });
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/api/status') {
       json(200, {
         status: controller.getStatus(),
