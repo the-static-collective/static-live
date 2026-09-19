@@ -12,6 +12,37 @@ It is deliberately downstream from the Collective's other runtime boundaries:
 
 Static Live is **not** a DAW, a low-latency audio engine, a performer-ranking system, or a replacement for Band Runtime.
 
+## Current frontier — Live Media Organism 001
+
+The current candidate target widens the question from “how do we truthfully perform and broadcast a song?” to “how can one human occurrence move through many media without losing its source, uncertainty, or admission boundaries?”
+
+```text
+OCCURRENCE
+  ↓
+PRESERVE
+  ↓
+BREATHE THROUGH MANY NATIVE REPRESENTATIONS
+  ↓
+ADMIT ONE OR MORE CONSEQUENCES
+  ↓
+EXPRESS
+  ↓
+RECEIPT
+```
+
+This is a **research + build target, not a claimed runtime**. The target treats livestream, podcast, radio, and archive as different temporal projections of one preserved occurrence. It also treats T5-shaped `carrier + typed task -> typed expression` as a replaceable transform grammar rather than making any one model the protocol owner.
+
+Founding boundaries include:
+
+```text
+TRANSCRIPT != AUDIO
+TRANSFORM PROVIDER != PROTOCOL OWNER
+CORPUS RESONANCE != SOURCE MEANING
+SHARED TRANSPORT != SHARED AUTHORITY
+```
+
+See [`docs/MADDTARGET-LIVE-MEDIA-ORGANISM-001.md`](docs/MADDTARGET-LIVE-MEDIA-ORGANISM-001.md).
+
 ## Governing law
 
 **A backing stem may replace a missing musical function. It may not pretend the missing human participated.**
