@@ -34,6 +34,7 @@ button { min-height:58px; font:inherit; font-weight:700; border:1px solid #555; 
 .attention-values { display:flex; gap:8px; flex-wrap:wrap; }
 .attention-value { min-height:40px; padding:8px 12px; }
 .attention-value[aria-pressed=true] { background:#345c42; border-color:#b5dfba; }
+#attention-handoff { width:100%; box-sizing:border-box; background:#161d17; color:#eee; margin-top:8px; padding:9px; font:12px/1.4 ui-monospace,monospace; }#attention-handoff[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -49,7 +50,7 @@ button { min-height:58px; font:inherit; font-weight:700; border:1px solid #555; 
 <div class="scenes">${sceneButtons}</div>
 <button id="mark" type="button">MARK MOMENT · private observation only</button>
 <div id="mark-result" role="status"><small>Markers remain private observations until reconciled with the finished file.</small></div>
-<div class="card"><small>ATTENTION CROSSING · choose a value for the selected mark</small><div class="attention-values" role="group" aria-label="Human valuation"><button type="button" class="attention-value" data-value="joyful" aria-pressed="false" disabled>Joyful</button><button type="button" class="attention-value" data-value="useful" aria-pressed="false" disabled>Useful</button><button type="button" class="attention-value" data-value="curiouser" aria-pressed="false" disabled>Curiouser</button><button type="button" class="attention-value" data-value="none" aria-pressed="false" disabled>None</button></div><div id="attention-result" role="status"><small>Mark a moment first. No value is inferred.</small></div></div>
+<div class="card"><small>ATTENTION CROSSING · choose a value for the selected mark</small><div class="attention-values" role="group" aria-label="Human valuation"><button type="button" class="attention-value" data-value="joyful" aria-pressed="false" disabled>Joyful</button><button type="button" class="attention-value" data-value="useful" aria-pressed="false" disabled>Useful</button><button type="button" class="attention-value" data-value="curiouser" aria-pressed="false" disabled>Curiouser</button><button type="button" class="attention-value" data-value="none" aria-pressed="false" disabled>None</button></div><div id="attention-result" role="status"><small>Mark a moment first. No value is inferred.</small></div><button id="attention-export" type="button" disabled>Copy attention handoff for Workbench</button><textarea id="attention-handoff" readonly hidden rows="6" aria-label="Attention handoff JSON for manual copying"></textarea><div id="attention-export-status" role="status"><small>Source-owned handoff available after a value is declared.</small></div></div>
 <button id="end" class="primary">END + PRESERVE</button>
 </section>
 <script>
@@ -84,6 +85,7 @@ async function refresh() {
 document.querySelector('#live').addEventListener('click', async () => { try { paint(await api('/api/live','POST')); } catch (e) { await refresh(); } });
 let selectedMark=null, selectedAttention=null, attentionPending=false;
 function paintAttention(){
+  document.querySelector('#attention-export').disabled=!selectedMark||!selectedAttention||attentionPending;
   document.querySelectorAll('.attention-value').forEach(button=>{
     button.disabled=!selectedMark||attentionPending;
     button.setAttribute('aria-pressed',String(selectedAttention ? (button.dataset.value==='none' ? selectedAttention.explicitNone : selectedAttention.dimensions.includes(button.dataset.value)) : false));
@@ -94,6 +96,8 @@ document.querySelector('#mark').addEventListener('click', async () => {
     document.querySelector('#mark').textContent = 'MARK MOMENT · private observation only';
     document.querySelector('#mark-result').textContent = 'Mark #' + result.marker.sequence + ' · ID ' + result.marker.markId + ' · ' + result.marker.approximateElapsedSinceConfirmationMs + ' ms since observed recording confirmation (not verified media time).';
     selectedMark=result.marker;selectedAttention=null;paintAttention();
+    document.querySelector('#attention-handoff').hidden=true;
+    document.querySelector('#attention-export-status').textContent='Choose a value before preparing a handoff.';
     document.querySelector('#attention-result').textContent='Choose a value for this observed mark.';
   } catch (e) { const fault = document.querySelector('#fault'); fault.textContent = e.message; fault.style.display = 'block'; }
 });
@@ -109,12 +113,42 @@ document.querySelectorAll('.attention-value').forEach(button=>button.addEventLis
       expectedPreviousId:selectedAttention?.id||null
     });
     selectedAttention=result.declaration;
+    document.querySelector('#attention-handoff').hidden=true;
+    document.querySelector('#attention-export-status').textContent='A declaration was saved locally. Export only when you choose.';
     document.querySelector('#attention-result').textContent='Private mark saved · '+
       (selectedAttention.explicitNone?'explicit None':selectedAttention.dimensions.join(' / ')||'unmarked');
   }catch(error){
     document.querySelector('#attention-result').textContent='Not saved: '+error.message;
   }finally{attentionPending=false;paintAttention();}
 }));
+document.querySelector('#attention-export').addEventListener('click', async () => {
+  const declaration=selectedAttention, marker=selectedMark;
+  const status=document.querySelector('#attention-export-status');
+  const fallback=document.querySelector('#attention-handoff');
+  fallback.hidden=true;fallback.value='';
+  if(!declaration||!marker||declaration.markId!==marker.markId){
+    status.textContent='Choose an exact marked observation before exporting.';return;
+  }
+  const envelope={
+    schema:'attention-crossing.handoff/v0.1',source_app:'static-live',
+    source_record_id:declaration.id,source_target_id:declaration.markId,
+    source_recorded_at:declaration.createdAtUtc,source_previous_id:declaration.previousId,
+    source_locator:'event/'+declaration.eventId+'/session/'+declaration.sessionId+'/mark/'+declaration.markId,
+    label:'Observed mark #'+marker.sequence+' · ~'+marker.approximateElapsedSinceConfirmationMs+' ms after confirmation (unverified media offset)',
+    dimensions:declaration.dimensions.slice(),explicit_none:declaration.explicitNone,
+    evidence:'source-export/self-reported'
+  };
+  const raw=JSON.stringify(envelope,null,2);
+  if(navigator.clipboard?.writeText){
+    try{
+      await navigator.clipboard.writeText(raw);
+      status.textContent='Copied source-owned mark; paste into Workbench Attention Shelf and review before importing.';
+      return;
+    }catch(error){ /* manual copy below */ }
+  }
+  fallback.value=raw;fallback.hidden=false;fallback.focus();fallback.select();
+  status.textContent='Clipboard unavailable. Select and copy this local handoff JSON manually.';
+});
 document.querySelector('#end').addEventListener('click', async () => { try { paint(await api('/api/end','POST')); } catch (e) { await refresh(); } });
 document.querySelectorAll('.scene').forEach((button) => button.addEventListener('click', async () => {
   try { paint(await api('/api/scene/' + encodeURIComponent(button.dataset.sceneId),'POST')); } catch (e) { await refresh(); }
