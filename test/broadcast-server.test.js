@@ -127,3 +127,20 @@ test('human attention routes only to a selected private mark, not OBS', async ()
     assert.deepEqual(calls,[['attend',payload]]);
   }finally{await server.stop();}
 });
+
+test('source-owned Attention Crossing handoff is exposed only after a declaration', async () => {
+  const server=createBroadcastServer({controller:fakeController(),plan,
+    markerBook:{attend(){ throw Error('not called'); }},port:0});
+  const address=await server.start();
+  try{
+    const html=await (await fetch(address.url)).text();
+    assert.match(html,/id="attention-export" type="button" disabled/);
+    assert.match(html,/source_app:'static-live'/);
+    assert.match(html,/source_record_id:declaration.id/);
+    assert.match(html,/source_target_id:declaration.markId/);
+    assert.match(html,/source_previous_id:declaration.previousId/);
+    assert.match(html,/source_recorded_at:declaration.createdAtUtc/);
+    assert.match(html,/evidence:'source-export\/self-reported'/);
+    assert.match(html,/Clipboard unavailable/);
+  }finally{await server.stop();}
+});
