@@ -5,6 +5,7 @@ import { compileBroadcastPlan } from './broadcast-compiler.js';
 import { createObsClient } from './obs-client.js';
 import { createBroadcastController } from './broadcast-controller.js';
 import { createBroadcastServer } from './broadcast-server.js';
+import { createMomentMarker } from './lifestream-002-marker.js';
 
 export function parseBroadcastCliArgs(argv) {
   if (!Array.isArray(argv) || argv.length === 0 || argv[0].startsWith('--')) {
@@ -12,6 +13,7 @@ export function parseBroadcastCliArgs(argv) {
   }
   const packetPath = argv[0];
   let port = 3008;
+  let momentJournal = null;
   for (let index = 1; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--port') {
@@ -24,9 +26,15 @@ export function parseBroadcastCliArgs(argv) {
       index += 1;
       continue;
     }
+    if (arg === '--moment-journal') {
+      if (!argv[index + 1] || argv[index + 1].startsWith('--') || momentJournal !== null)
+        throw new TypeError('--moment-journal requires one private local file path');
+      momentJournal = argv[++index];
+      continue;
+    }
     throw new TypeError(`unknown argument: ${arg}`);
   }
-  return { packetPath, port };
+  return { packetPath, port, momentJournal };
 }
 
 export async function runBroadcastCli({
@@ -39,7 +47,7 @@ export async function runBroadcastCli({
   logger = console,
   installSignalHandlers = true,
 } = {}) {
-  const { packetPath, port } = parseBroadcastCliArgs(argv);
+  const { packetPath, port, momentJournal } = parseBroadcastCliArgs(argv);
   const packet = JSON.parse(await readFileFn(packetPath, 'utf8'));
   const plan = compileBroadcastPlan(packet);
   const obs = createObsClientFn({
@@ -54,7 +62,8 @@ export async function runBroadcastCli({
   await obs.connect();
   const controller = createBroadcastControllerFn({ plan, obs });
   await controller.preflight();
-  const server = createBroadcastServerFn({ controller, plan, host: '127.0.0.1', port });
+  const markerBook = momentJournal ? createMomentMarker({ journalPath: momentJournal, eventId: plan.event.id }) : null;
+  const server = createBroadcastServerFn({ controller, plan, markerBook, host: '127.0.0.1', port });
   const address = await server.start();
 
   logger.log?.(`STATIC BROADCAST — ${plan.event.title}`);
