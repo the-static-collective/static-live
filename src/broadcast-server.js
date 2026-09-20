@@ -45,6 +45,7 @@ button { min-height:58px; font:inherit; font-weight:700; border:1px solid #555; 
 <button id="live" class="primary">GO LIVE</button>
 <div class="scenes">${sceneButtons}</div>
 <button id="mark" type="button">MARK MOMENT · private observation only</button>
+<div id="mark-result" role="status"><small>Markers remain private observations until reconciled with the finished file.</small></div>
 <button id="end" class="primary">END + PRESERVE</button>
 </section>
 <script>
@@ -79,7 +80,8 @@ async function refresh() {
 document.querySelector('#live').addEventListener('click', async () => { try { paint(await api('/api/live','POST')); } catch (e) { await refresh(); } });
 document.querySelector('#mark').addEventListener('click', async () => {
   try { const result = await api('/api/moment/mark','POST');
-    document.querySelector('#mark').textContent = 'MARKED #' + result.marker.sequence;
+    document.querySelector('#mark').textContent = 'MARK MOMENT · private observation only';
+    document.querySelector('#mark-result').textContent = 'Mark #' + result.marker.sequence + ' · ID ' + result.marker.markId + ' · ' + result.marker.approximateElapsedSinceConfirmationMs + ' ms since observed recording confirmation (not verified media time).';
   } catch (e) { const fault = document.querySelector('#fault'); fault.textContent = e.message; fault.style.display = 'block'; }
 });
 document.querySelector('#end').addEventListener('click', async () => { try { paint(await api('/api/end','POST')); } catch (e) { await refresh(); } });
