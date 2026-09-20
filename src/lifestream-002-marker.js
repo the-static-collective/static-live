@@ -31,6 +31,8 @@ export function createMomentMarker({ journalPath, eventId, now = utcNow, tick = 
   let session = null;
   let sequence = 0;
   const limit = 1000;
+  const knownMarks = new Map();
+  const attention = new Map();
   function begin() {
     if (session) return session.id;
     const candidate = { id: randomUUID(), tick: tick(), utc: now() };
@@ -63,7 +65,36 @@ export function createMomentMarker({ journalPath, eventId, now = utcNow, tick = 
     };
     appendNewline(journalPath, marker); // failed write never returns a success receipt
     sequence += 1;
+    knownMarks.set(marker.markId, marker);
     return marker;
   }
-  return { begin, mark, getStatus: () => ({ enabled: true, sessionId: session?.id ?? null, marks: sequence }) };
+  function attend({markId, dimensions, explicitNone = false, expectedPreviousId = null} = {}) {
+    const target = knownMarks.get(markId);
+    if (!target || !session || target.sessionId !== session.id)
+      throw new Error('attention requires a mark from this marker session');
+    const available = ['joyful','useful','curiouser'];
+    if (!Array.isArray(dimensions) || dimensions.length > 3 ||
+        dimensions.some(value => !available.includes(value)) ||
+        new Set(dimensions).size !== dimensions.length)
+      throw new Error('attention dimensions must be distinct Joyful / Useful / Curiouser values');
+    if (typeof explicitNone !== 'boolean' || (explicitNone && dimensions.length))
+      throw new Error('explicit none cannot contain dimensions');
+    const previous = attention.get(markId) || null;
+    if ((previous?.id || null) !== expectedPreviousId)
+      throw new Error('stale attention declaration; inspect current mark before revising');
+    const selected = available.filter(value => dimensions.includes(value));
+    if (previous && previous.explicitNone === explicitNone &&
+        JSON.stringify(previous.dimensions) === JSON.stringify(selected)) return previous;
+    const declaration = {
+      schema:'static-live.attention-crossing/v0.1', type:'human-attention-declaration',
+      id:randomUUID(), createdAtUtc:now(), eventId, sessionId:session.id, markId,
+      dimensions:selected, explicitNone, previousId:previous?.id || null,
+      basis:'explicit operator declaration on observed mark; not verified OBS media offset',
+      authority:'human-declared/local-only'
+    };
+    appendNewline(journalPath, declaration);
+    attention.set(markId, declaration);
+    return declaration;
+  }
+  return { begin, mark, attend, getStatus: () => ({ enabled: true, sessionId: session?.id ?? null, marks: sequence }) };
 }
