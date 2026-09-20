@@ -16,7 +16,7 @@ Visual and performance references, *not source assets*: Space Ghost contributes 
 
 ## 2. Grounding and architectural ownership
 
-- [Static Live README](../../../../README.md) defines truthful participation, capability fallbacks, and Static Live as physical performance/broadcast owner rather than a DAW or general audio engine.
+- [Static Live README](../../../README.md) defines truthful participation, capability fallbacks, and Static Live as physical performance/broadcast owner rather than a DAW or general audio engine.
 - [STREAM-001 console spec](2026-09-18-stream-001-static-broadcast-console-design.md) and `src/broadcast-server.js` own the loopback operator door; preserve its recording-before-streaming, `recording_only`, and `END + PRESERVE` semantics.
 - [LIFESTREAM-002](../../LIFESTREAM-002.md) owns opt-in private moment observation, and the human-reconciled finished-source media timeline. Monotonic time since recording confirmation is not a precise OBS file offset.
 - [Live Media Organism candidate](../../MADDTARGET-LIVE-MEDIA-ORGANISM-001.md) investigates one occurrence expressed as podcast, livestream, archive, and other media. It is a target, not an implemented universal runtime.
