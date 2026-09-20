@@ -29,7 +29,7 @@ test('marked observation persists without claiming media time or triggering OBS'
   } finally {rmSync(root,{recursive:true,force:true});}
 });
 test('journal is opt in; malformed CLI and missing private path refuse',()=>{
-  assert.equal(parseBroadcastCliArgs(['event.json']).momentJournal,null);
+  assert.equal(parseBroadcastCliArgs(['event.json']).momentJournal,undefined);
   assert.equal(parseBroadcastCliArgs(['event.json','--moment-journal','/private/marks.jsonl']).momentJournal,'/private/marks.jsonl');
   assert.throws(()=>parseBroadcastCliArgs(['event.json','--moment-journal']),/requires one private/);
   assert.throws(()=>createMomentMarker({journalPath:'',eventId:'s'}),/required/);
