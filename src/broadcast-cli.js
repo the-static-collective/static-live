@@ -34,7 +34,7 @@ export function parseBroadcastCliArgs(argv) {
     }
     throw new TypeError(`unknown argument: ${arg}`);
   }
-  return { packetPath, port, momentJournal };
+  return momentJournal === null ? { packetPath, port } : { packetPath, port, momentJournal };
 }
 
 export async function runBroadcastCli({
