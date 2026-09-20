@@ -133,3 +133,24 @@ POST /api/moment/attention accepts bounded same-origin JSON only. A declared
 value does not trigger OBS controls, run AI, publish anything, or constitute a
 project-native recording receipt. Actual local browser and OBS rehearsal are
 required before live-performance use.
+
+
+## PATH-ALL-HOME-001 — Explicit value export to Workbench
+
+After you deliberately mark a moment and click a human-value button, choose
+**Copy attention handoff for Workbench** on the same Static Broadcast page.
+Only the most recently marked observation and its most recently saved human
+declaration in the current session are available in this prototype. The
+v0.1 JSON contains the original event/session/mark/declaration identities,
+declaration predecessor, source time, value dimensions and a short display
+label with *approximate* time since recording confirmation. A clipboard
+failure exposes a manually copyable textarea instead. Nothing is sent to
+Workbench or another network service by the export control.
+
+Paste the JSON into Workbench's Attention Shelf, preview its asserted source
+identity and raw digest, and separately click Import reviewed copy. That
+Workbench receipt is a **new, local import event** and does not prove that
+the named source event happened, that the input was not altered, or that the
+media offset was aligned with OBS. Original Static Live JSONL remains the
+source owner. No recording file, OBS password, source media or streaming
+control is included in the handoff.
