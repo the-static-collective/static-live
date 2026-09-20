@@ -109,3 +109,27 @@ publication and auto-generation require new, separately authorized adapters.
   not authentication for remote or multi-user deployment.
 - No passive background capture, automated transcript, pipeline execution, automatic
   feedback into OBS, social posting, or inferred psychological/identity claim.
+
+## ATTENTION-CROSSING-LIVE-001: human valuation of observed moments
+
+When the optional private marker journal is enabled, Static Broadcast exposes
+Joyful, Useful, Curiouser and None after the operator deliberately clicks
+MARK MOMENT. The mark and value declaration are separate records. Simply
+recording, streaming, observing or marking a moment implies no valuation.
+
+Each value click appends a human-attributed (local operator) declaration to
+the configured private marker JSONL, with the event, session, exact mark ID,
+selected dimensions, UTC observation, previous declaration ID and a nonclaim
+that this is not a verified media-file offset. None is explicit and distinct
+from no declaration. Toggling preserves earlier declarations.
+
+The browser's four buttons refer only to the most recently marked observation
+in the current live session. Restarting the server does not silently resume
+prior marks, although their previous JSONL receipts remain on disk. A future
+separate reader can use that journal to reconcile history with finished source
+files without asserting automatic audio/video alignment.
+
+POST /api/moment/attention accepts bounded same-origin JSON only. A declared
+value does not trigger OBS controls, run AI, publish anything, or constitute a
+project-native recording receipt. Actual local browser and OBS rehearsal are
+required before live-performance use.
