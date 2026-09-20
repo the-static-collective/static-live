@@ -44,6 +44,7 @@ button { min-height:58px; font:inherit; font-weight:700; border:1px solid #555; 
 <section class="controls">
 <button id="live" class="primary">GO LIVE</button>
 <div class="scenes">${sceneButtons}</div>
+<button id="mark" type="button">MARK MOMENT · private observation only</button>
 <button id="end" class="primary">END + PRESERVE</button>
 </section>
 <script>
@@ -64,6 +65,7 @@ function paint(body) {
   fault.style.display = s.fault ? 'block' : 'none';
   document.querySelector('#live').disabled = s.state !== 'ready';
   document.querySelector('#end').disabled = !(s.recording || s.stream);
+  document.querySelector('#mark').disabled = !(s.momentMarkingAvailable && s.recording && ['recording','recording_only','live'].includes(s.state));
   document.querySelectorAll('.scene').forEach((button) => {
     button.disabled = !['recording','recording_only','live'].includes(s.state);
   });
@@ -75,6 +77,11 @@ async function refresh() {
   }
 }
 document.querySelector('#live').addEventListener('click', async () => { try { paint(await api('/api/live','POST')); } catch (e) { await refresh(); } });
+document.querySelector('#mark').addEventListener('click', async () => {
+  try { const result = await api('/api/moment/mark','POST');
+    document.querySelector('#mark').textContent = 'MARKED #' + result.marker.sequence;
+  } catch (e) { const fault = document.querySelector('#fault'); fault.textContent = e.message; fault.style.display = 'block'; }
+});
 document.querySelector('#end').addEventListener('click', async () => { try { paint(await api('/api/end','POST')); } catch (e) { await refresh(); } });
 document.querySelectorAll('.scene').forEach((button) => button.addEventListener('click', async () => {
   try { paint(await api('/api/scene/' + encodeURIComponent(button.dataset.sceneId),'POST')); } catch (e) { await refresh(); }
@@ -86,7 +93,7 @@ setInterval(refresh, 1000);
 </html>`;
 }
 
-export function createBroadcastServer({ controller, plan, host = '127.0.0.1', port = 0 } = {}) {
+export function createBroadcastServer({ controller, plan, markerBook = null, host = '127.0.0.1', port = 0 } = {}) {
   if (host !== '127.0.0.1') throw new TypeError('STREAM-001 server must bind 127.0.0.1');
   if (!controller || !plan) throw new TypeError('controller and plan are required');
 
@@ -120,14 +127,14 @@ export function createBroadcastServer({ controller, plan, host = '127.0.0.1', po
 
     if (req.method === 'GET' && url.pathname === '/api/status') {
       json(200, {
-        status: controller.getStatus(),
+        status: { ...controller.getStatus(), momentMarkingAvailable: Boolean(markerBook) },
         event: { id: plan.event.id, title: plan.event.title },
         scenes: Object.values(plan.scenes).map(({ id, label, obsSceneName }) => ({ id, label, obsSceneName })),
       });
       return;
     }
 
-    const actionRoute = url.pathname === '/api/live' || url.pathname === '/api/end' || url.pathname.startsWith('/api/scene/');
+    const actionRoute = url.pathname === '/api/live' || url.pathname === '/api/end' || url.pathname === '/api/moment/mark' || url.pathname.startsWith('/api/scene/');
     if (actionRoute && req.method !== 'POST') {
       json(405, { error: 'method not allowed' });
       return;
@@ -135,8 +142,15 @@ export function createBroadcastServer({ controller, plan, host = '127.0.0.1', po
 
     try {
       if (req.method === 'POST' && url.pathname === '/api/live') {
-        await controller.goLive();
-        json(200, { status: controller.getStatus() });
+        try { await controller.goLive(); }
+        finally { if (markerBook && controller.getStatus().recording) markerBook.begin(); }
+        json(200, { status: { ...controller.getStatus(), momentMarkingAvailable: Boolean(markerBook) } });
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/api/moment/mark') {
+        if (!markerBook) { json(409, { error: 'private marker journal not configured' }); return; }
+        const marker = markerBook.mark(controller.getStatus());
+        json(200, { marker, status: controller.getStatus() });
         return;
       }
       if (req.method === 'POST' && url.pathname === '/api/end') {
