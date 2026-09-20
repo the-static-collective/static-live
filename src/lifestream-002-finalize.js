@@ -1,8 +1,8 @@
 // LIFESTREAM-002: manually reconcile a durable mark with a finished, selected media file.
 // There is deliberately no estimation/conversion from marker elapsed time to media offset.
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { readFileSync, openSync, writeFileSync, closeSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createMoment } from './lifestream-001.js';
 import { canonicalStringify } from './canonical-json.js';
 
@@ -84,7 +84,7 @@ function cli(argv) {
     recordingStartedAtUtc:a['--recording-started-at'],outFile:a['--out'],
     recordingFinished:a['--recording-finished'],clockWitnesses:clocks});
 }
-if(process.argv[1] && resolve(process.argv[1])===resolve(new URL(import.meta.url).pathname)){
+if(process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url){
   try {console.log(JSON.stringify(cli(process.argv.slice(2))));}
   catch(e){console.error('LIFESTREAM-002 REFUSED:',e.message);process.exitCode=1;}
 }
