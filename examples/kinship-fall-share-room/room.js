@@ -3,6 +3,8 @@
 
   const VERSION = 'kinship-fall-share-room/v0.1';
   const STORAGE_KEY = 'kinship-fall-share-room:v0.1';
+  const MEMORY_POLICY = 'kinship-station-memory-from-toaster/v0.1';
+  const RECENT_AIR_WINDOW = 12;
 
   const OFFICIAL_LINKS = [
     { id: 'fall-share', label: 'Fall Share 2026', href: 'https://kinshipradio.org/main/fall-share-2026-landing/', kind: 'station-public', protected: false },
@@ -164,6 +166,7 @@
       cards: starterCards(),
       sources: OFFICIAL_LINKS.map(item => ({ ...item })),
       archive: [],
+      memory: { verdicts: [] },
       settings: { date: '2026-09-29', operator: '' }
     };
   }
@@ -194,7 +197,7 @@
     }).join('\n\n');
   }
 
-  function makeCard({ doorId, blocks, title, copy, sourceIds, claimMode, duration, operator }) {
+  function makeCard({ doorId, blocks, title, copy, sourceIds, claimMode, duration, operator, ancestorId = null }) {
     const door = DOORS.find(item => item.id === doorId) || DOORS[0];
     const selectedBlocks = blocks && blocks.length ? blocks : door.blocks;
     return {
@@ -212,7 +215,8 @@
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       airedAt: null,
-      returnNote: ''
+      returnNote: '',
+      ancestorId: ancestorId || null
     };
   }
 
@@ -231,6 +235,155 @@
       updated.returnNote = note;
     }
     return updated;
+  }
+
+  function stableUnique(values) {
+    return [...new Set((values || []).filter(Boolean).map(String))].sort();
+  }
+
+  function stationFeatures(card) {
+    return stableUnique([
+      card?.doorId ? 'door:' + card.doorId : null,
+      card?.claimMode ? 'claim:' + card.claimMode : null,
+      ...(card?.blocks || []).map(value => 'block:' + value),
+      ...(card?.sourceIds || []).map(value => 'source:' + value)
+    ]);
+  }
+
+  function memoryVerdictWeight(verdict) {
+    if (!verdict) return 0;
+    const disposition = verdict.disposition === 'keep' ? 0.5 : verdict.disposition === 'compost' ? -0.5 : 0;
+    return disposition + (verdict.wouldReopen ? 0.25 : 0);
+  }
+
+  function makeMemoryVerdict(cardId, disposition, wouldReopen = false, now = new Date()) {
+    if (!['keep', 'weird', 'compost'].includes(disposition)) throw new Error('memory verdict must be keep, weird, or compost');
+    return {
+      schema: 'kinship.station-memory-verdict/v0.1',
+      verdictId: uid('verdict'),
+      cardId: String(cardId),
+      createdAt: now.toISOString(),
+      disposition,
+      wouldReopen: wouldReopen === true
+    };
+  }
+
+  function buildStationMemory(cards = [], verdicts = []) {
+    const aired = cards
+      .filter(card => card?.airedAt)
+      .slice()
+      .sort((a, b) => String(a.airedAt).localeCompare(String(b.airedAt)) || String(a.id).localeCompare(String(b.id)));
+
+    const orderedVerdicts = verdicts
+      .filter(item => item?.schema === 'kinship.station-memory-verdict/v0.1')
+      .slice()
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)) || String(a.verdictId).localeCompare(String(b.verdictId)));
+
+    const latestVerdicts = {};
+    for (const verdict of orderedVerdicts) latestVerdicts[verdict.cardId] = verdict;
+
+    const featureCounts = {};
+    const recentFeatureCounts = {};
+    const increment = (target, key, amount = 1) => { target[key] = (target[key] || 0) + amount; };
+    for (const card of aired) for (const feature of stationFeatures(card)) increment(featureCounts, feature);
+    for (const card of aired.slice(-RECENT_AIR_WINDOW)) for (const feature of stationFeatures(card)) increment(recentFeatureCounts, feature);
+
+    const featureAffection = {};
+    for (const card of aired) {
+      const weight = memoryVerdictWeight(latestVerdicts[card.id]);
+      if (!weight) continue;
+      for (const feature of stationFeatures(card)) increment(featureAffection, feature, weight);
+    }
+
+    const evidenceForDoor = doorId => aired.filter(card => card.doorId === doorId).map(card => 'air:' + card.id);
+    const pressures = [];
+
+    const doorCounts = DOORS.map(door => ({ door, count: featureCounts['door:' + door.id] || 0 }));
+    if (doorCounts.length) {
+      const minimum = Math.min(...doorCounts.map(item => item.count));
+      const underexplored = doorCounts.filter(item => item.count === minimum).sort((a, b) => a.door.id.localeCompare(b.door.id))[0];
+      if (underexplored) {
+        pressures.push({
+          kind: 'underexplored',
+          targetDoorId: underexplored.door.id,
+          label: underexplored.door.label,
+          weight: 1 / (1 + underexplored.count),
+          evidenceRefs: ['memory:aired-count=' + aired.length, ...evidenceForDoor(underexplored.door.id)],
+          explanation: underexplored.count === 0
+            ? 'This door has not appeared in the witnessed air history yet.'
+            : 'This is among the least-used witnessed doors.'
+        });
+      }
+    }
+
+    const favored = aired
+      .map(card => ({ card, verdict: latestVerdicts[card.id], weight: memoryVerdictWeight(latestVerdicts[card.id]) }))
+      .filter(item => item.weight > 0)
+      .sort((a, b) => b.weight - a.weight || String(b.card.airedAt).localeCompare(String(a.card.airedAt)))[0];
+    if (favored) {
+      pressures.push({
+        kind: 'explicit-return',
+        targetCardId: favored.card.id,
+        targetDoorId: favored.card.doorId,
+        label: favored.card.title,
+        weight: favored.weight,
+        evidenceRefs: ['air:' + favored.card.id, 'verdict:' + favored.verdict.verdictId],
+        explanation: 'A human explicitly marked this witnessed air as worth carrying forward.'
+      });
+    }
+
+    const recentDoorCounts = DOORS
+      .map(door => ({ door, count: recentFeatureCounts['door:' + door.id] || 0 }))
+      .filter(item => item.count >= 2)
+      .sort((a, b) => b.count - a.count || a.door.id.localeCompare(b.door.id));
+    if (recentDoorCounts.length) {
+      const saturated = recentDoorCounts[0];
+      const alternative = doorCounts.slice().sort((a, b) => a.count - b.count || a.door.id.localeCompare(b.door.id))
+        .find(item => item.door.id !== saturated.door.id);
+      if (alternative) {
+        pressures.push({
+          kind: 'saturation',
+          targetDoorId: alternative.door.id,
+          avoidsDoorId: saturated.door.id,
+          label: alternative.door.label,
+          weight: saturated.count,
+          evidenceRefs: evidenceForDoor(saturated.door.id).slice(-RECENT_AIR_WINDOW),
+          explanation: saturated.door.label + ' has repeated in recent witnessed air history; this nudge points elsewhere.'
+        });
+      }
+    }
+
+    return {
+      schema: 'kinship.station-memory-projection/v0.1',
+      policy: MEMORY_POLICY,
+      airedCount: aired.length,
+      recentWindow: RECENT_AIR_WINDOW,
+      featureCounts: Object.fromEntries(Object.entries(featureCounts).sort(([a], [b]) => a.localeCompare(b))),
+      recentFeatureCounts: Object.fromEntries(Object.entries(recentFeatureCounts).sort(([a], [b]) => a.localeCompare(b))),
+      featureAffection: Object.fromEntries(Object.entries(featureAffection).sort(([a], [b]) => a.localeCompare(b))),
+      latestVerdicts: Object.fromEntries(Object.entries(latestVerdicts).sort(([a], [b]) => a.localeCompare(b))),
+      pressures: pressures.slice(0, 3)
+    };
+  }
+
+  function reopenCard(card, operator = '') {
+    if (!card?.airedAt) throw new Error('only witnessed aired cards can be re-opened');
+    return makeCard({
+      doorId: card.doorId,
+      blocks: card.blocks,
+      title: 'Return: ' + card.title,
+      copy: [
+        'ANCESTOR',
+        'Explicitly re-opened from witnessed air: ' + card.id + '. Prior wording is history, not current truth.',
+        '',
+        card.copy
+      ].join('\n'),
+      sourceIds: card.sourceIds,
+      claimMode: card.claimMode,
+      duration: card.duration,
+      operator,
+      ancestorId: card.id
+    });
   }
 
   function roomState(cards) {
@@ -264,8 +417,9 @@
   }
 
   const core = {
-    VERSION, STORAGE_KEY, OFFICIAL_LINKS, DOORS, BLOCKS, TRANSITIONS,
-    blankState, asMoneyNumber, money, progress, composeText, makeCard, transition, roomState, buildRundown, exportState
+    VERSION, STORAGE_KEY, MEMORY_POLICY, RECENT_AIR_WINDOW, OFFICIAL_LINKS, DOORS, BLOCKS, TRANSITIONS,
+    blankState, asMoneyNumber, money, progress, composeText, makeCard, transition, stationFeatures,
+    memoryVerdictWeight, makeMemoryVerdict, buildStationMemory, reopenCard, roomState, buildRundown, exportState
   };
   root.KinshipRoomCore = core;
 
@@ -280,6 +434,8 @@
       if (!raw) return blankState();
       const parsed = JSON.parse(raw);
       if (parsed.schema !== VERSION) return blankState();
+      if (!parsed.memory || !Array.isArray(parsed.memory.verdicts)) parsed.memory = { verdicts: [] };
+      for (const card of parsed.cards || []) if (!Object.prototype.hasOwnProperty.call(card, 'ancestorId')) card.ancestorId = null;
       return parsed;
     } catch {
       return blankState();
@@ -304,6 +460,7 @@
     renderBlocks();
     renderSources();
     renderCards();
+    renderMemory();
     renderArchive();
     renderState();
     q('#date').value = state.settings.date || '';
@@ -364,12 +521,49 @@
       '<article class="segment status-' + esc(card.status) + '">' +
         '<header><div><span class="eyebrow">' + esc(card.doorLabel) + '</span><h3>' + esc(card.title) + '</h3></div>' +
         '<span class="status">' + esc(card.status) + '</span></header>' +
-        '<div class="segment-meta"><span>' + esc(card.duration) + 's</span><span>' + esc(card.claimMode) + '</span><span>' + esc((card.sourceIds || []).length) + ' source(s)</span></div>' +
+        '<div class="segment-meta"><span>' + esc(card.duration) + 's</span><span>' + esc(card.claimMode) + '</span><span>' + esc((card.sourceIds || []).length) + ' source(s)</span>' +
+        (card.ancestorId ? '<span>re-opened from ' + esc(card.ancestorId) + '</span>' : '') + '</div>' +
         '<pre>' + esc(card.copy) + '</pre>' +
         (card.returnNote ? '<div class="return-note"><strong>Return:</strong> ' + esc(card.returnNote) + '</div>' : '') +
         '<footer>' + cardButtons(card) + '</footer>' +
       '</article>'
     ).join('') : '<div class="empty">No cards yet. Pick a door or assemble Lego blocks.</div>';
+  }
+
+  function renderMemory() {
+    const memory = buildStationMemory(state.cards, state.memory?.verdicts || []);
+    q('#memory-summary').textContent = memory.airedCount
+      ? memory.airedCount + ' witnessed air(s) · memory may nudge attention, never establish meaning'
+      : 'No witnessed air history yet. Memory begins only after a human confirms something actually aired.';
+
+    q('#memory-pressures').innerHTML = memory.pressures.length ? memory.pressures.map((pressure, index) =>
+      '<article class="memory-pressure">' +
+        '<div><span class="eyebrow">' + esc(pressure.kind) + '</span><h3>' + esc(pressure.label) + '</h3></div>' +
+        '<p>' + esc(pressure.explanation) + '</p>' +
+        '<details><summary>Influence trace</summary><code>' + esc(pressure.evidenceRefs.join(' · ')) + '</code></details>' +
+        (pressure.targetCardId
+          ? '<button data-reopen="' + esc(pressure.targetCardId) + '">Re-open this witnessed ancestor</button>'
+          : '<button data-memory-door="' + esc(pressure.targetDoorId) + '">Open this door in Workshop</button>') +
+      '</article>'
+    ).join('') : '<div class="empty">No memory pressure yet. An empty memory is an honest state.</div>';
+
+    const aired = state.cards.filter(card => card.airedAt).slice()
+      .sort((a, b) => String(b.airedAt).localeCompare(String(a.airedAt)));
+    const latest = memory.latestVerdicts;
+    q('#past-airs').innerHTML = aired.length ? aired.map(card => {
+      const verdict = latest[card.id];
+      return '<article class="past-air">' +
+        '<div><span class="eyebrow">' + esc(card.doorLabel) + '</span><h3>' + esc(card.title) + '</h3>' +
+        '<small>' + esc(card.airedAt) + '</small></div>' +
+        '<p>' + (verdict ? 'Latest human verdict: <strong>' + esc(verdict.disposition) + '</strong>' + (verdict.wouldReopen ? ' · would re-open' : '') : 'No human memory verdict yet.') + '</p>' +
+        '<div class="memory-actions">' +
+          '<button data-memory-verdict="keep" data-id="' + esc(card.id) + '">keep</button>' +
+          '<button data-memory-verdict="weird" data-id="' + esc(card.id) + '">weird</button>' +
+          '<button data-memory-verdict="compost" data-id="' + esc(card.id) + '">compost</button>' +
+          '<button data-reopen="' + esc(card.id) + '">Re-open</button>' +
+        '</div>' +
+      '</article>';
+    }).join('') : '<div class="empty">Past Airs stays empty until an operator explicitly confirms an air event.</div>';
   }
 
   function renderArchive() {
@@ -494,6 +688,36 @@
       renderBlocks();
       return;
     }
+    const memoryDoor = event.target.closest('[data-memory-door]');
+    if (memoryDoor) {
+      const door = DOORS.find(item => item.id === memoryDoor.dataset.memoryDoor);
+      if (door) fillComposer(door);
+      return;
+    }
+    const memoryVerdict = event.target.closest('[data-memory-verdict]');
+    if (memoryVerdict) {
+      const card = state.cards.find(item => item.id === memoryVerdict.dataset.id);
+      if (!card?.airedAt) return alert('Memory verdicts attach only to witnessed air.');
+      const wouldReopen = confirm('Also mark this witnessed air as something you would intentionally re-open later?');
+      state.memory = state.memory || { verdicts: [] };
+      state.memory.verdicts.push(makeMemoryVerdict(card.id, memoryVerdict.dataset.memoryVerdict, wouldReopen));
+      save(); renderMemory();
+      return;
+    }
+    const reopenButton = event.target.closest('[data-reopen]');
+    if (reopenButton) {
+      const card = state.cards.find(item => item.id === reopenButton.dataset.reopen);
+      try {
+        const fresh = reopenCard(card, state.settings.operator);
+        state.cards.push(fresh);
+        save(); render();
+        editCard(fresh.id);
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+
     const transitionButton = event.target.closest('[data-transition]');
     if (transitionButton) {
       moveCard(transitionButton.dataset.id, transitionButton.dataset.transition);
