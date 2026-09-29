@@ -11,7 +11,10 @@
     { id: 'events', label: 'Community calendar', href: 'https://kinshipradio.org/main/events/', kind: 'station-public', protected: false },
     { id: 'volunteer', label: 'Volunteers / Ambassadors', href: 'https://kinshipradio.org/main/ambassador-and-volunteer-faqs/', kind: 'station-owned-action', protected: false },
     { id: 'prayer', label: 'Prayer requests — open only', href: 'https://kinshipradio.org/main/prayer-requests/', kind: 'station-owned-sensitive', protected: true },
-    { id: 'director', label: 'The Director’s Chair', href: 'https://kinshipradio.org/main/the-directors-chair/', kind: 'station-public', protected: false }
+    { id: 'director', label: 'The Director’s Chair', href: 'https://kinshipradio.org/main/the-directors-chair/', kind: 'station-public', protected: false },
+    { id: 'community-appearances', label: 'Kinship community appearances', href: 'https://kinshipradio.org/main/find-kinship-radio-near-you-this-summer/', kind: 'station-public', protected: false },
+    { id: 'coffee-day', label: 'National Coffee Association · September 29', href: 'https://www.ncausa.org/Newsroom/Grounds-for-celebration-Americans-remain-committed-to-coffee', kind: 'external-public', protected: false },
+    { id: 'goose-day', label: 'Pomeroy Foundation · Goose Day historic marker', href: 'https://www.wgpfoundation.org/historic-markers/goose-day/', kind: 'external-public', protected: false }
   ];
 
   const DOORS = [
@@ -75,6 +78,82 @@
     return prefix + ':' + suffix;
   }
 
+  function starterCards() {
+    const first = makeCard({
+      doorId: 'why-kinship',
+      title: 'More than radio',
+      sourceIds: ['fall-share', 'director', 'give'],
+      claimMode: 'interpretation',
+      duration: 55,
+      operator: 'gift:starter',
+      copy: [
+        'SOURCE',
+        'Kinship’s public 2026 messages describe the ministry as a family, invite listeners to join the support team, and point people to the station’s own giving path.',
+        '',
+        'STORY',
+        'What has Kinship carried into your family, church, commute, hospital room, farm, town, or ordinary Tuesday?',
+        '',
+        'INVITATION',
+        'If this ministry has carried something to you, the official Kinship giving page is the money door.'
+      ].join('\\n')
+    });
+    const second = makeCard({
+      doorId: 'community-door',
+      title: 'Tonight: KJCY Soup & Sweets',
+      sourceIds: ['community-appearances'],
+      claimMode: 'observed',
+      duration: 25,
+      operator: 'gift:starter',
+      copy: [
+        'SOURCE',
+        'Kinship’s public community-appearance schedule lists KJCY Soup & Sweets in Mason City on September 29 from 4:30–7:00 PM at Grace E Free Church. Re-check before air.',
+        '',
+        'QUESTION',
+        'Who are you bringing with you?',
+        '',
+        'INVITATION',
+        'Meet Kinship people face-to-face tonight in Mason City.'
+      ].join('\\n')
+    });
+    const third = makeCard({
+      doorId: 'volunteer-door',
+      title: 'Support can look like showing up',
+      sourceIds: ['director', 'volunteer'],
+      claimMode: 'derived',
+      duration: 35,
+      operator: 'gift:starter',
+      copy: [
+        'SOURCE',
+        'Kinship publicly invites volunteers and ambassadors into a station-owned application, screening, interview and training process.',
+        '',
+        'INVITATION',
+        'If giving money is not your door today, volunteering may be. Use Kinship’s own volunteer path.',
+        '',
+        'RETURN',
+        'Later: remember what new capacity became possible because somebody showed up.'
+      ].join('\\n')
+    });
+    const fourth = makeCard({
+      doorId: 'what-day',
+      title: 'Coffee Day → Goose Day',
+      sourceIds: ['coffee-day', 'goose-day'],
+      claimMode: 'observed',
+      duration: 45,
+      operator: 'gift:starter',
+      copy: [
+        'SOURCE',
+        'September 29 is National Coffee Day. It is also Goose Day in Pennsylvania’s Juniata River Valley, a regional Michaelmas tradition with old rent-and-goose lore.',
+        '',
+        'STORY',
+        'The compressed version is almost absurdly radio-perfect: settle the rent, bring a goose, then eat the goose.',
+        '',
+        'QUESTION',
+        'What strange tradition does your family or town still keep?'
+      ].join('\\n')
+    });
+    return [first, second, third, fourth];
+  }
+
   function blankState() {
     return {
       schema: VERSION,
@@ -82,7 +161,7 @@
       title: 'Fall Share Room',
       createdAt: new Date().toISOString(),
       pulse: { goal: '', raised: '', match: '', note: '' },
-      cards: [],
+      cards: starterCards(),
       sources: OFFICIAL_LINKS.map(item => ({ ...item })),
       archive: [],
       settings: { date: '2026-09-29', operator: '' }
@@ -261,7 +340,7 @@
     q('#source-list').innerHTML = state.sources.map(source => {
       const protectedBadge = source.protected ? '<span class="badge protected">open only · never ingest</span>' : '';
       return '<article class="source-row">' +
-        '<label><input type="checkbox" class="source-check" value="' + esc(source.id) + '"> <strong>' + esc(source.label) + '</strong></label>' +
+        '<label><input type="checkbox" class="source-check" value="' + esc(source.id) + '"' + (source.protected ? ' disabled' : '') + '> <strong>' + esc(source.label) + '</strong></label>' +
         '<div class="source-meta"><span class="badge">' + esc(source.kind) + '</span>' + protectedBadge + '</div>' +
         '<a href="' + esc(source.href) + '" target="_blank" rel="noopener">open official source ↗</a>' +
       '</article>';
@@ -440,6 +519,19 @@
       note: q('#pulse-note').value.trim()
     };
     save(); renderPulse();
+  });
+
+  q('#add-source').addEventListener('click', () => {
+    const label = q('#new-source-label').value.trim();
+    const href = q('#new-source-url').value.trim();
+    if (!label || !href) return alert('Source label and public URL are required.');
+    let parsed;
+    try { parsed = new URL(href); } catch { return alert('Use a valid http/https public URL.'); }
+    if (!['http:', 'https:'].includes(parsed.protocol)) return alert('Only public http/https sources are admitted here.');
+    state.sources.push({ id: uid('source'), label, href: parsed.href, kind: 'operator-added-public', protected: false });
+    q('#new-source-label').value = '';
+    q('#new-source-url').value = '';
+    save(); renderSources();
   });
 
   q('#date').addEventListener('change', event => { state.settings.date = event.target.value; save(); });
