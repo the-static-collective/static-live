@@ -70,6 +70,7 @@ textarea { resize: vertical; line-height: 1.45; }
 .editor { display: grid; gap: .8rem; }
 .inline-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
 .micro { font-size: .82rem; color: var(--muted); }
+.add-source { display: grid; grid-template-columns: 1fr 2fr auto; gap: .7rem; align-items: end; margin-bottom: .7rem; }
 .source-list { display: grid; gap: .6rem; }
 .source-row { display: grid; grid-template-columns: 1.7fr 1fr auto; gap: 1rem; align-items: center; background: var(--panel-strong); border: 1px solid var(--line); padding: .9rem; border-radius: 10px; }
 .source-meta { display: flex; gap: .4rem; flex-wrap: wrap; }
@@ -112,7 +113,7 @@ footer { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem
 @media (max-width: 560px) {
   .shell { width: min(100% - 18px, 1180px); }
   .masthead { padding-top: 2rem; }
-  .official-links, .pulse-grid, .threshold-grid, .door-buttons, .lego-bench, .source-row, .room-state, .return-archive, .operator-row, .inline-fields { grid-template-columns: 1fr; }
+  .official-links, .pulse-grid, .threshold-grid, .door-buttons, .lego-bench, .source-row, .room-state, .return-archive, .operator-row, .inline-fields, .add-source { grid-template-columns: 1fr; }
   .progress-copy, footer { display: grid; }
   .room { border-radius: 12px; }
 }
