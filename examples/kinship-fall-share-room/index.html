@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Kinship Fall Share Room</title>
+  <link rel="stylesheet" href="room.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">KINSHIP-002 · LOCAL GIFT SURFACE</p>
+        <h1>Kinship Fall Share Room</h1>
+        <p class="lede">A small room for a big week: prepare the radio, keep the human in the chair, remember what came back.</p>
+      </div>
+      <div class="official-links">
+        <a href="https://kinshipradio.org/main/fall-share-2026-landing/" target="_blank" rel="noopener">Fall Share 2026 ↗</a>
+        <a class="primary-link" href="https://kinshipradio.org/main/giving" target="_blank" rel="noopener">Official giving page ↗</a>
+        <a href="https://kinshipradio.org/main/" target="_blank" rel="noopener">Listen ↗</a>
+      </div>
+    </header>
+
+    <aside class="boundary">
+      <strong>Unofficial gift. Kinship owns Kinship.</strong>
+      This room runs locally in this browser. It does not send donor, prayer, listener, or volunteer data anywhere. Money totals are staff-entered observations, not bank records. “Aired” requires a human confirmation.
+    </aside>
+
+    <nav class="room-nav" aria-label="Room locations">
+      <a href="#threshold">Threshold</a>
+      <a href="#composer">Workshop</a>
+      <a href="#sources">Source Shelf</a>
+      <a href="#stack">Live Stack</a>
+      <a href="#return">Return Archive</a>
+    </nav>
+
+    <main>
+      <section id="threshold" class="room">
+        <div class="room-title">
+          <div><p class="eyebrow">THRESHOLD</p><h2>Fall Share pulse</h2></div>
+          <p>Manual, staff-confirmed numbers only. This room never fetches donor records.</p>
+        </div>
+        <div class="pulse-grid">
+          <label>Goal <input id="goal" inputmode="decimal" placeholder="$"></label>
+          <label>Raised <input id="raised" inputmode="decimal" placeholder="$"></label>
+          <label>Current match <input id="match" inputmode="decimal" placeholder="$"></label>
+          <label class="wide">Live note <input id="pulse-note" placeholder="e.g. Match through noon; verify before every read."></label>
+          <button id="save-pulse">Save local pulse</button>
+        </div>
+        <div class="progress"><div id="progress-bar"></div></div>
+        <div class="progress-copy"><strong id="progress-label"></strong><span id="match-label"></span></div>
+
+        <div class="threshold-grid">
+          <article class="door-card">
+            <h3>Give</h3>
+            <p>The money door stays Kinship-owned.</p>
+            <a href="https://kinshipradio.org/main/giving" target="_blank" rel="noopener">Open official giving page ↗</a>
+          </article>
+          <article class="door-card">
+            <h3>Volunteer</h3>
+            <p>Kinship already has application, screening, interview and training.</p>
+            <a href="https://kinshipradio.org/main/ambassador-and-volunteer-faqs/" target="_blank" rel="noopener">Open volunteer path ↗</a>
+          </article>
+          <article class="door-card protected-door">
+            <h3>Prayer</h3>
+            <p>Sensitive station-owned surface. Open it; never ingest it here.</p>
+            <a href="https://kinshipradio.org/main/prayer-requests/" target="_blank" rel="noopener">Open Kinship prayer page ↗</a>
+          </article>
+          <article class="door-card">
+            <h3>Community</h3>
+            <p>Use what Kinship already knows about its towns, churches and events.</p>
+            <a href="https://kinshipradio.org/main/events/" target="_blank" rel="noopener">Open community calendar ↗</a>
+          </article>
+        </div>
+
+        <div class="operator-row">
+          <label>Show date <input id="date" type="date"></label>
+          <label>Human operator <input id="operator" placeholder="name or local role"></label>
+        </div>
+      </section>
+
+      <section id="composer" class="room">
+        <div class="room-title">
+          <div><p class="eyebrow">WORKSHOP</p><h2>Magic Lego segment composer</h2></div>
+          <p>Build a usable on-air object from explicit pieces. No model required.</p>
+        </div>
+
+        <div id="door-buttons" class="door-buttons"></div>
+
+        <div class="lego-bench">
+          <div>
+            <h3>Choose blocks</h3>
+            <div id="lego-blocks" class="lego-blocks"></div>
+            <pre id="block-preview" class="preview"></pre>
+            <button id="assemble">Assemble blocks into editor</button>
+          </div>
+          <div class="editor">
+            <label>Door
+              <select id="segment-door">
+                <option value="why-kinship">Why Kinship?</option>
+                <option value="faith-gift">Faith Gift invitation</option>
+                <option value="match-moment">Matching moment</option>
+                <option value="listener-story">Listener story</option>
+                <option value="community-door">Community door</option>
+                <option value="volunteer-door">Volunteer door</option>
+                <option value="scripture">Scripture address</option>
+                <option value="what-day">What Day Is It?</option>
+                <option value="thank-you">Thank-you / return</option>
+                <option value="one-more">Just One More Thing</option>
+              </select>
+            </label>
+            <div class="inline-fields">
+              <label>Duration <input id="segment-duration" type="number" min="5" max="300" value="60"> sec</label>
+              <label>Claim mode
+                <select id="claim-mode">
+                  <option>observed</option><option>derived</option><option>interpretation</option><option>metaphor</option>
+                </select>
+              </label>
+            </div>
+            <label>Title <input id="segment-title" value="Why Kinship?"></label>
+            <label>Copy / notes <textarea id="segment-copy" rows="14"></textarea></label>
+            <p class="micro">Check sources below before adding. Prayer is intentionally not selectable as a source.</p>
+            <button id="add-card" class="primary">Add local draft card</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="sources" class="room">
+        <div class="room-title">
+          <div><p class="eyebrow">SOURCE SHELF</p><h2>Kinship-owned public doors</h2></div>
+          <p>Select only sources that actually support the segment you are preparing.</p>
+        </div>
+        <div id="source-list" class="source-list"></div>
+      </section>
+
+      <section id="stack" class="room">
+        <div class="room-title">
+          <div><p class="eyebrow">LIVE STACK</p><h2>Prepared radio objects</h2></div>
+          <p><code>draft → ready → aired → returned</code>. Hold is a valid outcome.</p>
+        </div>
+
+        <div id="room-state" class="room-state"></div>
+        <div class="stack-actions">
+          <button id="print">Print producer rundown</button>
+          <button id="export">Export room JSON</button>
+          <label class="file-button">Import room JSON<input id="import" type="file" accept="application/json"></label>
+          <button id="reset" class="danger ghost">Reset local room</button>
+        </div>
+        <div id="on-air-stack" class="on-air-stack"></div>
+      </section>
+
+      <section id="return" class="room">
+        <div class="room-title">
+          <div><p class="eyebrow">RETURN ARCHIVE</p><h2>What came back?</h2></div>
+          <p>A donation number is one return. A volunteer, corrected story, new relationship or future capacity can be another.</p>
+        </div>
+        <div id="return-archive" class="return-archive"></div>
+      </section>
+
+      <section class="room quiet">
+        <p class="eyebrow">THE WHOLE LOOP</p>
+        <pre class="loop">source / person / town
+        ↓
+human prepares a bounded on-air object
+        ↓
+Kinship decides whether to use it
+        ↓
+radio encounter
+        ↓
+gift / call / volunteer / story / correction / no response
+        ↓
+human witnesses what actually came back
+        ↓
+return becomes future memory — not retroactive proof</pre>
+      </section>
+    </main>
+
+    <footer>
+      <strong>HELP THE HUMAN PREPARE THE RADIO. DO NOT PRETEND TO BE THE RADIO.</strong>
+      <span>KINSHIP-002 · Static Live · local-first gift specimen</span>
+    </footer>
+  </div>
+
+  <div id="print-rundown" class="print-only"></div>
+  <script src="room.js"></script>
+</body>
+</html>
