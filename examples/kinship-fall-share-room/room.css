@@ -96,6 +96,13 @@ textarea { resize: vertical; line-height: 1.45; }
 .segment pre { background: #f3efe6; color: #1c2526; padding: .8rem; border-radius: 8px; }
 .segment footer { display: flex; gap: .45rem; flex-wrap: wrap; }
 .return-note { border-top: 1px solid var(--line); margin: .8rem 0; padding-top: .8rem; }
+.memory-law { border-left: 5px solid var(--accent-2); background: rgba(225,239,232,.62); padding: 1rem 1.1rem; border-radius: 0 10px 10px 0; margin-bottom: 1.2rem; line-height: 1.5; }
+.memory-pressures, .past-airs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin-bottom: 1.2rem; }
+.memory-pressure, .past-air { background: var(--panel-strong); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
+.memory-pressure p, .past-air p { color: var(--muted); line-height: 1.45; }
+.memory-pressure details { margin: .7rem 0; font-size: .78rem; }
+.memory-pressure code { display: block; white-space: normal; overflow-wrap: anywhere; margin-top: .4rem; color: var(--muted); }
+.memory-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
 .return-archive { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; }
 .archive-card { background: var(--panel-strong); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
 .empty { color: var(--muted); padding: 1.2rem; border: 1px dashed var(--line); border-radius: 10px; }
@@ -113,7 +120,7 @@ footer { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem
 @media (max-width: 560px) {
   .shell { width: min(100% - 18px, 1180px); }
   .masthead { padding-top: 2rem; }
-  .official-links, .pulse-grid, .threshold-grid, .door-buttons, .lego-bench, .source-row, .room-state, .return-archive, .operator-row, .inline-fields, .add-source { grid-template-columns: 1fr; }
+  .official-links, .pulse-grid, .threshold-grid, .door-buttons, .lego-bench, .source-row, .room-state, .return-archive, .operator-row, .inline-fields, .add-source, .memory-pressures, .past-airs { grid-template-columns: 1fr; }
   .progress-copy, footer { display: grid; }
   .room { border-radius: 12px; }
 }
