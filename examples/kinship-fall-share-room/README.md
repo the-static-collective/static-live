@@ -149,3 +149,107 @@ Any donor-platform, prayer, CRM, automation, broadcast, SMS or volunteer-system 
 ## Founding line
 
 > **KINSHIP OWNS KINSHIP. THE ROOM HOLDS THE DAY OPEN LONG ENOUGH FOR PEOPLE TO MEET EACH OTHER.**
+
+
+## KINSHIP-003 — Station Memory from Haunted Toaster
+
+The Room now borrows the Haunted Toaster's receipt-backed memory law:
+
+> **Memory may change what the system is inclined to try and what the witness is inclined to notice. Neither may change what actually happened.**
+
+Radio translation:
+
+```text
+prepared card
+!=
+aired occurrence
+
+past aired occurrence
+!=
+current truth
+
+human verdict
+!=
+audience model
+
+memory pressure
+!=
+programming authority
+
+re-open
+!=
+replay
+```
+
+### Past Airs
+
+A card enters Station Memory only after a human explicitly confirms that it aired. Drafts, ready cards, and held cards do not become history simply because they existed in the Room.
+
+### Append-only human verdicts
+
+For a witnessed Past Air, the operator may add:
+
+- **KEEP** — worth carrying forward;
+- **WEIRD** — preserve the strange encounter without deciding that it should repeat;
+- **COMPOST** — let it feed history without pushing repetition.
+
+The operator can separately mark that they would intentionally re-open the occurrence.
+
+A later verdict appends. Earlier testimony remains in the exported Room state.
+
+### Rebuildable memory projection
+
+The Room derives transparent features only from witnessed air:
+
+- door used;
+- claim mode;
+- Lego blocks present;
+- explicit source identities.
+
+It counts full and recent history and derives at most three bounded pressures:
+
+- **underexplored** — a radio door used least or not at all;
+- **explicit-return** — a witnessed ancestor a human explicitly marked worth carrying forward;
+- **saturation** — a recently repeated door creates pressure toward a less-used alternative.
+
+Each pressure exposes its evidence references in the UI.
+
+There is no donor-response optimization, listener profiling, semantic inference, or hidden model.
+
+### Re-open
+
+**Re-open** creates a fresh draft with a new identity and an explicit ancestor reference. It preserves the previous copy as historical material but prefixes the new draft with:
+
+```text
+Prior wording is history, not current truth.
+```
+
+The producer must re-check time-sensitive facts and decide whether any part belongs in a new occurrence.
+
+### Why this is Toaster-shaped
+
+Haunted Toaster keeps distinct:
+
+```text
+render receipt
+human verdict
+memory projection
+memory capsule / pressure
+influence trace
+accepted execution
+```
+
+KINSHIP-003 keeps the analogous radio objects distinct:
+
+```text
+aired occurrence
+human verdict
+station-memory projection
+bounded memory pressure
+visible evidence refs
+fresh human programming decision
+```
+
+The point is not to make Kinship's radio haunted by software.
+
+The point is to let **history accumulate without becoming authority**.

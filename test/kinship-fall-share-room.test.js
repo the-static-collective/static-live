@@ -55,3 +55,63 @@ test('rundown includes only ready or later cards', () => {
   assert.equal(rundown.length, 1);
   assert.equal(rundown[0].status, 'ready');
 });
+
+
+test('station memory ignores drafts and begins with witnessed air', () => {
+  const draft = core.makeCard({ doorId: 'what-day', sourceIds: ['coffee-day'] });
+  const empty = core.buildStationMemory([draft], []);
+  assert.equal(empty.airedCount, 0);
+
+  let aired = core.transition(core.transition(draft, 'ready'), 'aired', { confirmed: true });
+  const memory = core.buildStationMemory([aired], []);
+  assert.equal(memory.airedCount, 1);
+  assert.equal(memory.featureCounts['door:what-day'], 1);
+});
+
+test('memory projection is deterministic across card and verdict order', () => {
+  let a = core.makeCard({ doorId: 'community-door', sourceIds: ['events'] });
+  let b = core.makeCard({ doorId: 'volunteer-door', sourceIds: ['volunteer'] });
+  a = { ...core.transition(core.transition(a, 'ready'), 'aired', { confirmed: true }), airedAt: '2026-09-29T20:00:00.000Z' };
+  b = { ...core.transition(core.transition(b, 'ready'), 'aired', { confirmed: true }), airedAt: '2026-09-29T21:00:00.000Z' };
+  const va = { schema: 'kinship.station-memory-verdict/v0.1', verdictId: 'v:a', cardId: a.id, createdAt: '2026-09-29T22:00:00.000Z', disposition: 'keep', wouldReopen: true };
+  const vb = { schema: 'kinship.station-memory-verdict/v0.1', verdictId: 'v:b', cardId: b.id, createdAt: '2026-09-29T22:01:00.000Z', disposition: 'weird', wouldReopen: false };
+  assert.deepEqual(
+    core.buildStationMemory([a, b], [va, vb]),
+    core.buildStationMemory([b, a], [vb, va])
+  );
+});
+
+test('later memory verdict does not erase earlier testimony', () => {
+  let card = core.makeCard({ doorId: 'listener-story', sourceIds: ['director'] });
+  card = core.transition(core.transition(card, 'ready'), 'aired', { confirmed: true });
+  const older = { schema: 'kinship.station-memory-verdict/v0.1', verdictId: 'v1', cardId: card.id, createdAt: '2026-09-29T20:00:00.000Z', disposition: 'weird', wouldReopen: false };
+  const newer = { schema: 'kinship.station-memory-verdict/v0.1', verdictId: 'v2', cardId: card.id, createdAt: '2026-09-29T20:01:00.000Z', disposition: 'keep', wouldReopen: true };
+  const verdicts = [older, newer];
+  const memory = core.buildStationMemory([card], verdicts);
+  assert.equal(verdicts.length, 2);
+  assert.equal(memory.latestVerdicts[card.id].verdictId, 'v2');
+});
+
+test('re-open creates a fresh draft with explicit ancestry', () => {
+  let card = core.makeCard({ doorId: 'why-kinship', sourceIds: ['director'], copy: 'historical copy' });
+  card = core.transition(core.transition(card, 'ready'), 'aired', { confirmed: true });
+  const returned = core.reopenCard(card, 'human:test');
+  assert.equal(returned.status, 'draft');
+  assert.equal(returned.ancestorId, card.id);
+  assert.notEqual(returned.id, card.id);
+  assert.match(returned.copy, /Prior wording is history, not current truth/);
+});
+
+test('station memory creates transparent bounded pressures', () => {
+  const cards = [];
+  for (let i = 0; i < 3; i++) {
+    let card = core.makeCard({ doorId: 'what-day', sourceIds: ['coffee-day'] });
+    card = core.transition(core.transition(card, 'ready'), 'aired', { confirmed: true });
+    card.airedAt = '2026-09-29T2' + i + ':00:00.000Z';
+    cards.push(card);
+  }
+  const memory = core.buildStationMemory(cards, []);
+  assert.ok(memory.pressures.length <= 3);
+  assert.ok(memory.pressures.some(item => item.kind === 'saturation'));
+  assert.ok(memory.pressures.every(item => item.evidenceRefs.length > 0));
+});
