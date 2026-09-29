@@ -1,0 +1,91 @@
+{
+  "schema": "static-live.kinship-pilot-input/v0.1",
+  "station": {
+    "id": "kinship-radio",
+    "name": "Kinship Radio",
+    "sourceRefs": [
+      {
+        "ref": "https://kinshipradio.org/main/",
+        "label": "Kinship Radio public home",
+        "authority": "station-public"
+      },
+      {
+        "ref": "https://kinshipradio.org/main/the-directors-chair/",
+        "label": "Kinship Radio Director's Chair public messages",
+        "authority": "station-public"
+      }
+    ]
+  },
+  "edition": {
+    "id": "kinship-2026-09-29-pilot",
+    "localDate": "2026-09-29",
+    "intendedUse": "human-reviewed volunteer morning/community pack; no station adoption implied"
+  },
+  "candidates": [
+    {
+      "id": "community-door-soup-sweets",
+      "kind": "community-door",
+      "title": "Kinship in the community tonight",
+      "copy": "Producer candidate: Kinship's public events page lists KJCY Soup & Sweets in Mason City for September 29 from 4:30 to 7:00 PM. Re-check the station page before air because event details can change.",
+      "claimMode": "observed",
+      "sourceRefs": [
+        {
+          "ref": "https://kinshipradio.org/main/find-kinship-radio-near-you-this-summer/",
+          "label": "Kinship Radio public community appearance schedule",
+          "authority": "station-public"
+        }
+      ],
+      "review": {
+        "disposition": "ready",
+        "reviewedBy": "human:static-collective-pilot",
+        "reviewedAtUtc": "2026-09-29T20:00:00.000Z",
+        "note": "This is a producer lead, not an automated on-air announcement. Verify the event again immediately before use."
+      }
+    },
+    {
+      "id": "station-note-volunteer-door",
+      "kind": "station-note",
+      "title": "Volunteer door",
+      "copy": "Producer candidate: Kinship publicly says it needs volunteers for work including welcoming guests, clerical help, festivals and parades; its volunteer program requires application, background check, interview and training. A host could invite listeners to explore that existing station-owned path rather than creating a parallel signup system.",
+      "claimMode": "derived",
+      "sourceRefs": [
+        {
+          "ref": "https://kinshipradio.org/main/the-directors-chair/",
+          "label": "Kinship Director's Chair volunteer message dated September 14, 2026",
+          "authority": "station-public"
+        },
+        {
+          "ref": "https://kinshipradio.org/main/ambassador-and-volunteer-faqs/",
+          "label": "Kinship Ambassador and Volunteer FAQs",
+          "authority": "station-public"
+        }
+      ],
+      "review": {
+        "disposition": "ready",
+        "reviewedBy": "human:static-collective-pilot",
+        "reviewedAtUtc": "2026-09-29T20:00:00.000Z",
+        "note": "Route people to Kinship's own process. Do not collect volunteer applications in Collective tooling."
+      }
+    },
+    {
+      "id": "scripture-reference-romans-12-10",
+      "kind": "scripture-reference",
+      "title": "Kinship / one-another reference",
+      "copy": "Romans 12:10 — reference only. Kinship's human producer selects the translation and exact on-air wording under the station's own licensing and editorial practice.",
+      "claimMode": "observed",
+      "sourceRefs": [
+        {
+          "ref": "bible:Romans.12.10",
+          "label": "Romans 12:10 reference; no translation text bundled",
+          "authority": "scripture-reference"
+        }
+      ],
+      "review": {
+        "disposition": "hold",
+        "reviewedBy": "human:static-collective-pilot",
+        "reviewedAtUtc": "2026-09-29T20:00:00.000Z",
+        "note": "Held until a Kinship editor decides whether it fits the day's program."
+      }
+    }
+  ]
+}
