@@ -29,10 +29,12 @@
 
     <nav class="room-nav" aria-label="Room locations">
       <a href="#threshold">Threshold</a>
+      <a href="#porch">Porch</a>
       <a href="#composer">Workshop</a>
       <a href="#sources">Source Shelf</a>
       <a href="#stack">Live Stack</a>
       <a href="#memory">Station Memory</a>
+      <a href="#handoff">Shift Handoff</a>
       <a href="#return">Return Archive</a>
     </nav>
 
@@ -79,6 +81,43 @@
           <label>Show date <input id="date" type="date"></label>
           <label>Human operator <input id="operator" placeholder="name or local role"></label>
         </div>
+      </section>
+
+      <section id="porch" class="room">
+        <div class="room-title">
+          <div><p class="eyebrow">PORCH · CREATIVE CUSTOMS</p><h2>Let material arrive without becoming radio</h2></div>
+          <p><code>PORCH != INTERIOR · WELCOME != ADMIT · RELEASE SIGNAL != LICENSE</code></p>
+        </div>
+        <aside class="porch-law">
+          Use this only for non-sensitive production material. Do not enter prayer requests, donor/payment data, volunteer screening information, or private listener records.
+        </aside>
+        <div class="porch-form">
+          <label>Title <input id="porch-title" placeholder="Story lead, event, voice-letter reference…"></label>
+          <label>Origin <input id="porch-origin" placeholder="person / church / town / public source"></label>
+          <label>Kind
+            <select id="porch-kind">
+              <option value="story-lead">story lead</option>
+              <option value="event">event</option>
+              <option value="public-link">public link</option>
+              <option value="voice-letter-ref">voice-letter reference</option>
+              <option value="audio-ref">audio reference</option>
+              <option value="video-ref">video reference</option>
+              <option value="idea">idea</option>
+            </select>
+          </label>
+          <label>Rights posture
+            <select id="porch-rights">
+              <option value="unknown">unknown</option>
+              <option value="permission-declared">permission declared</option>
+              <option value="license-ref">license reference exists</option>
+              <option value="station-owned-public">station-owned public</option>
+            </select>
+          </label>
+          <label class="wide">Public reference <input id="porch-ref" type="url" placeholder="https://… optional public reference"></label>
+          <label class="wide">Material / note <textarea id="porch-note" rows="5" placeholder="What arrived? Preserve uncertainty and context."></textarea></label>
+          <button id="porch-add">Place on Porch</button>
+        </div>
+        <div id="porch-items" class="porch-items"></div>
       </section>
 
       <section id="composer" class="room">
@@ -176,6 +215,19 @@
         <div id="past-airs" class="past-airs"></div>
       </section>
 
+      <section id="handoff" class="room">
+        <div class="room-title">
+          <div><p class="eyebrow">SHIFT HANDOFF · RELATTE RECEIVER ANCESTRY</p><h2>Pass the room without teleporting authority</h2></div>
+          <p><code>DELIVERY != ADMISSION · RECEIVED != ADMITTED · SAME HANDOFF != SAME CONSEQUENCE</code></p>
+        </div>
+        <div class="handoff-actions">
+          <button id="handoff-export">Export shift handoff</button>
+          <label class="file-button">Receive shift handoff<input id="handoff-import" type="file" accept="application/json"></label>
+        </div>
+        <p class="micro">A received handoff has no semantic effect. The next operator can HOLD, REFUSE, or explicitly ADMIT it as the working room. Export the current room before replacing it.</p>
+        <div id="handoff-inbox" class="handoff-inbox"></div>
+      </section>
+
       <section id="return" class="room">
         <div class="room-title">
           <div><p class="eyebrow">RETURN ARCHIVE</p><h2>What came back?</h2></div>
@@ -204,7 +256,7 @@ return becomes future memory — not retroactive proof</pre>
 
     <footer>
       <strong>HELP THE HUMAN PREPARE THE RADIO. DO NOT PRETEND TO BE THE RADIO.</strong>
-      <span>KINSHIP-002 · Static Live · local-first gift specimen</span>
+      <span>KINSHIP-004 · Static Live · local-first gift specimen</span>
     </footer>
   </div>
 
