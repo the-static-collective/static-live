@@ -115,3 +115,57 @@ test('station memory creates transparent bounded pressures', () => {
   assert.ok(memory.pressures.some(item => item.kind === 'saturation'));
   assert.ok(memory.pressures.every(item => item.evidenceRefs.length > 0));
 });
+
+
+test('Porch arrival has no Workshop effect', () => {
+  const item = core.makePorchItem({
+    title: 'Public event lead',
+    kind: 'event',
+    publicRef: 'https://example.org/event',
+    rights: 'station-owned-public'
+  });
+  const state = core.blankState();
+  state.cards = [];
+  state.porch.items.push(item);
+  assert.equal(state.cards.length, 0);
+  assert.equal(core.latestCustoms(item.itemId, state.porch.receipts), null);
+});
+
+test('Creative Customs welcome is not admission', () => {
+  const item = core.makePorchItem({ title: 'Story lead', kind: 'story-lead', rights: 'permission-declared' });
+  const receipt = core.recordCustoms(item, 'welcome', 'Worth considering.');
+  assert.equal(receipt.semanticEffect, 'none');
+  assert.equal(receipt.disposition, 'welcome');
+  assert.throws(() => core.admitPorchToWorkshop(item, [], 'human:test'), /must be welcomed/);
+  const card = core.admitPorchToWorkshop(item, [receipt], 'human:test');
+  assert.equal(card.status, 'draft');
+  assert.match(card.copy, /WELCOME did not establish ownership/);
+});
+
+test('shift handoff receive does not mutate current room', () => {
+  const current = core.blankState();
+  current.cards = [];
+  const source = core.blankState();
+  source.cards = [core.makeCard({ doorId: 'what-day', sourceIds: ['coffee-day'] })];
+  const handoff = core.makeShiftHandoff(source, 'host:a');
+  const receipt = core.receiveShiftHandoff(handoff);
+  assert.equal(receipt.disposition, 'received');
+  assert.equal(receipt.semanticEffect, 'none');
+  assert.equal(current.cards.length, 0);
+});
+
+test('shift handoff requires explicit admit to replace working room', () => {
+  const current = core.blankState();
+  current.cards = [];
+  const source = core.blankState();
+  source.cards = [core.makeCard({ doorId: 'community-door', sourceIds: ['events'] })];
+  const handoff = core.makeShiftHandoff(source, 'host:a');
+
+  const held = core.adoptShiftHandoff(current, handoff, 'hold');
+  assert.equal(held.state.cards.length, 0);
+  assert.equal(held.receipt.semanticEffect, 'none');
+
+  const admitted = core.adoptShiftHandoff(current, handoff, 'admit');
+  assert.equal(admitted.state.cards.length, 1);
+  assert.match(admitted.receipt.semanticEffect, /explicit-human-choice/);
+});

@@ -71,6 +71,14 @@ textarea { resize: vertical; line-height: 1.45; }
 .inline-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
 .micro { font-size: .82rem; color: var(--muted); }
 .add-source { display: grid; grid-template-columns: 1fr 2fr auto; gap: .7rem; align-items: end; margin-bottom: .7rem; }
+.porch-law { border-left: 5px solid var(--gold); background: rgba(255,248,223,.65); padding: 1rem 1.1rem; border-radius: 0 10px 10px 0; margin-bottom: 1rem; line-height: 1.45; }
+.porch-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem; margin-bottom: 1rem; }
+.porch-form .wide { grid-column: 1 / -1; }
+.porch-items, .handoff-inbox { display: grid; grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+.porch-item, .handoff-card { background: var(--panel-strong); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
+.porch-item header { display: flex; justify-content: space-between; gap: 1rem; }
+.porch-item footer, .handoff-card footer, .handoff-actions { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .8rem; }
+.handoff-card code { display: block; overflow-wrap: anywhere; color: var(--muted); font-size: .75rem; }
 .source-list { display: grid; gap: .6rem; }
 .source-row { display: grid; grid-template-columns: 1.7fr 1fr auto; gap: 1rem; align-items: center; background: var(--panel-strong); border: 1px solid var(--line); padding: .9rem; border-radius: 10px; }
 .source-meta { display: flex; gap: .4rem; flex-wrap: wrap; }
@@ -120,7 +128,7 @@ footer { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem
 @media (max-width: 560px) {
   .shell { width: min(100% - 18px, 1180px); }
   .masthead { padding-top: 2rem; }
-  .official-links, .pulse-grid, .threshold-grid, .door-buttons, .lego-bench, .source-row, .room-state, .return-archive, .operator-row, .inline-fields, .add-source, .memory-pressures, .past-airs { grid-template-columns: 1fr; }
+  .official-links, .pulse-grid, .threshold-grid, .door-buttons, .lego-bench, .source-row, .room-state, .return-archive, .operator-row, .inline-fields, .add-source, .memory-pressures, .past-airs, .porch-form, .porch-items, .handoff-inbox { grid-template-columns: 1fr; }
   .progress-copy, footer { display: grid; }
   .room { border-radius: 12px; }
 }

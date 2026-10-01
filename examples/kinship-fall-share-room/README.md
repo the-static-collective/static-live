@@ -253,3 +253,71 @@ fresh human programming decision
 The point is not to make Kinship's radio haunted by software.
 
 The point is to let **history accumulate without becoming authority**.
+
+
+## KINSHIP-004 — Porch + Shift Handoff from reLATTE
+
+The October 1 reLATTE work exposed two mechanisms that compose directly into the Kinship gift without requiring Kinship to run reLATTE itself.
+
+### Porch / Creative Customs
+
+Incoming production material now lands outside the Workshop.
+
+```text
+ARRIVE
+  ↓
+PORCH
+  ↓
+WELCOME | HOLD | REFUSE
+  ↓
+optional separate ADMIT TO WORKSHOP
+```
+
+The room preserves:
+
+```text
+PORCH != INTERIOR
+WELCOME != ADMIT
+RELEASE SIGNAL != LICENSE
+DELIVERY != CONSENT
+```
+
+A WELCOME receipt has `semanticEffect: none`. It says only that a human is willing to consider the item. A separate human action creates a fresh radio draft.
+
+The Porch is explicitly for non-sensitive production material. Prayer requests, donor/payment data, volunteer screening information, and private listener records do not belong there.
+
+### Shift Handoff
+
+The existing whole-room export remains available, but KINSHIP-004 adds a safer producer-to-producer crossing.
+
+```text
+working room A
+  ↓
+SHIFT HANDOFF
+  ↓
+RECEIVED by room B
+  ↓
+HOLD | REFUSE | ADMIT
+```
+
+Receiving a handoff does not replace the current room.
+
+```text
+DELIVERY != ADMISSION
+RECEIVED != ADMITTED
+SAME HANDOFF != SAME CONSEQUENCE
+```
+
+Only an explicit **ADMIT AS WORKING ROOM** action replaces the local working snapshot. HOLD and REFUSE leave the current room unchanged.
+
+This is a Kinship-local adaptation of reLATTE's durable receiver / replaceable-road work; it does not claim reLATTE signatures, transport receipts, or mirror durability.
+
+### Newest work deliberately not hard-wired yet
+
+Three October 1 experiments are highly relevant but remain open upstream work:
+
+- Autodisco **RELEASE GATE → BROADCAST GATE → PAIR LISTEN**;
+- ROroomOM verified **audio Lego / Video Window** resolvers;
+- Haunted Toaster **Future Rearview / Batch Console**.
+
+They are treated as next doors rather than dependencies. The one-file gift remains zero-install.
