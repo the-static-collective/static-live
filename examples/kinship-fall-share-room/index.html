@@ -11,7 +11,7 @@
   <div class="shell">
     <header class="masthead">
       <div>
-        <p class="eyebrow">KINSHIP-002 · LOCAL GIFT SURFACE</p>
+        <p class="eyebrow">KINSHIP-005 · LOCAL GIFT SURFACE</p>
         <h1>Kinship Fall Share Room</h1>
         <p class="lede">A small room for a big week: prepare the radio, keep the human in the chair, remember what came back.</p>
       </div>
@@ -28,7 +28,7 @@
     </aside>
 
     <nav class="room-nav" aria-label="Room locations">
-      <a href="#threshold">Threshold</a>
+      <a href="#threshold">Threshold</a><a href="#campaign">Campaign track</a><a href="#media-review">Media Lego</a>
       <a href="#porch">Porch</a>
       <a href="#composer">Workshop</a>
       <a href="#sources">Source Shelf</a>
@@ -39,6 +39,24 @@
     </nav>
 
     <main>
+      <section id="campaign" class="room">
+        <div class="room-title"><div><p class="eyebrow">FUTURE REARVIEW</p><h2>Campaign track</h2></div><p>Plan the next breaks from witnessed history. Plans never confirm an air.</p></div>
+        <div class="inline-fields"><label>Draft <select id="track-card"></select></label><label>Planned time / sequence <input id="track-time" placeholder="09:15 / break 1"></label></div>
+        <label>Intention <input id="track-intent" placeholder="What might this break make possible?"></label><button id="track-add">Add to ordered track</button>
+        <div id="track-slots" class="on-air-stack"></div>
+        <h3>Learn from confirmed airs</h3><div id="track-evidence"></div>
+        <label>Learning — human interpretation <textarea id="track-learning"></textarea></label>
+        <label>Future proposal — not a fact or instruction <textarea id="track-proposal"></textarea></label>
+        <button id="track-revise">Append future revision</button><div id="track-revisions" class="on-air-stack"></div>
+      </section>
+      <section id="media-review" class="room">
+        <div class="room-title"><div><p class="eyebrow">MEDIA LEGO</p><h2>Voice letters &amp; first listens</h2></div><p>Local playback, explicit permitted-use review, then a fresh draft.</p></div>
+        <p class="boundary">Use non-sensitive, authorized production material. This is a shared-device courtesy seal, not cryptographic isolation. Responses remain readable in exports/browser storage. Files stay local and must be reattached after reopening. Admission prepares a draft; it never airs or publishes.</p>
+        <div class="inline-fields"><label>Title <input id="media-title"></label><label>Kind <select id="media-kind"><option>voice-letter</option><option>audio</option><option>video</option></select></label></div>
+        <label>Permission / license reference <input id="media-rights" placeholder="Local release document reference; no private details"></label>
+        <button id="media-add">Place media reference for review</button><div id="track-media" class="on-air-stack"></div>
+      </section>
+
       <section id="threshold" class="room">
         <div class="room-title">
           <div><p class="eyebrow">THRESHOLD</p><h2>Fall Share pulse</h2></div>
