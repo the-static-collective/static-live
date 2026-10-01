@@ -321,3 +321,64 @@ Three October 1 experiments are highly relevant but remain open upstream work:
 - Haunted Toaster **Future Rearview / Batch Console**.
 
 They are treated as next doors rather than dependencies. The one-file gift remains zero-install.
+
+## KINSHIP-005 — campaign track and media review
+
+The same zero-install room now carries an ordered campaign track, future
+revisions, and local audio/video/voice-letter review. These are standalone
+browser implementations of the composition shapes, not upstream adapters or
+claims that Kinship has adopted Collective infrastructure.
+
+### A first complete round trip
+
+1. Enter a show date and operator. Historical September 29 starter material is
+   an example; verify current events and invitations before using it.
+2. Prepare a Workshop card. In **Campaign track**, choose it, enter its planned
+   time/sequence and intention, and add it. It remains **PROPHECY**.
+3. Prepare the card and, only after it actually airs, use **Confirm aired** in
+   Live Stack. The track can now display a **RECEIPT**. Record any concrete return.
+4. Select confirmed airs, write what you learned and what you propose for the
+   remaining day, and append a revision. Earlier revisions and plans remain.
+   The room never changes the programming order or marks a card aired from a
+   proposal. Add a new card/slot when the host chooses the revised direction.
+5. Export the room or a shift handoff. Campaign slots, revision evidence,
+   media metadata, reviews and response history travel with that snapshot;
+   received handoffs still need explicit admission.
+
+### Media Lego and two first responses
+
+Create a non-sensitive production reference with a permission/license document
+reference, then attach an authorized local audio/video file. The browser hashes
+its bytes with SHA-256; subsequent attachments must match. Different bytes need
+another reference. Playback uses a temporary local object URL with no autoplay.
+The file itself is neither uploaded nor included in exports, and must be
+reattached after reopening. SHA-256 identifies bytes; it does not prove authorship,
+consent, validity of a release, or that somebody actually listened.
+
+Two different listener roles may each seal one response. The normal interface
+hides the response text until both are sealed. This is a shared-device courtesy
+workflow, **not** isolated sessions or cryptographic secrecy. A response is a
+human report, not proof of listening. Responses are readable in local storage and
+exports; do not put private listener identities or sensitive material here.
+
+An operator can append HOLD / REFUSE / ADMIT reviews. Admission requires exact
+attached bytes, a permission/license reference and an explicit permitted-use
+scope. The software records the human assertion; station staff must verify the
+underlying permission. Only the latest ADMIT permits a Workshop draft, and a
+subsequent HOLD/REFUSE prevents that draft becoming ready or being confirmed
+as aired. Existing air history remains history. Neither admission nor pair
+responses authorize publishing, broadcasting, distributing a voice letter, or
+replacing the station's release process.
+
+### Scope and validation
+
+This pack composes campaign memory, a bounded release/broadcast preparation
+shape, two first responses and local media playback. It does not connect to
+Autodisco Pair Listen, RETURN ADDRESS, the Vault, Haunted Blender or Toaster
+services. It makes no signed-carrier, independent-listener, vault-resolution or
+filmmaker-acceptance claim. Those adapters remain future work.
+
+Run `npm test` from the repository root. Focused campaign tests verify that
+unwitnessed plans cannot support learning, revisions carry no programming
+authority, different bytes cannot inherit first responses, media admission is
+bounded, shift receipt has no effect, and the handoff embeds the current source.

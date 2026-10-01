@@ -156,6 +156,9 @@
         'What strange tradition does your family or town still keep?'
       ].join('\\n')
     });
+    second.title = 'Historical example — September 29 Soup & Sweets';
+    second.copy = 'HISTORICAL SEPTEMBER 29, 2026 EXAMPLE. Reverify a current event before use.\n\n' + second.copy;
+    fourth.title = 'Historical example — Coffee Day → Goose Day';
     return [first, second, third, fourth];
   }
 
@@ -169,10 +172,11 @@
       cards: starterCards(),
       sources: OFFICIAL_LINKS.map(item => ({ ...item })),
       archive: [],
+      track: blankTrack(),
       memory: { verdicts: [] },
       porch: { items: [], receipts: [] },
       handoffs: { inbox: [], receipts: [] },
-      settings: { date: '2026-09-29', operator: '' }
+      settings: { date: '', operator: '' }
     };
   }
 
@@ -260,6 +264,7 @@
       sources: structuredClone(stateValue.sources),
       memory: structuredClone(stateValue.memory || { verdicts: [] }),
       porch: structuredClone(stateValue.porch || { items: [], receipts: [] }),
+      track: structuredClone(stateValue.track || blankTrack()),
       settings: structuredClone(stateValue.settings)
     };
     return {
@@ -306,6 +311,7 @@
       sources: structuredClone(handoff.snapshot.sources),
       memory: structuredClone(handoff.snapshot.memory || { verdicts: [] }),
       porch: structuredClone(handoff.snapshot.porch || { items: [], receipts: [] }),
+      track: structuredClone(handoff.snapshot.track || blankTrack()),
       settings: structuredClone(handoff.snapshot.settings),
       handoffs: structuredClone(currentState.handoffs || { inbox: [], receipts: [] })
     };
@@ -557,7 +563,52 @@
     return JSON.stringify({ ...state, exportedAt: new Date().toISOString() }, null, 2);
   }
 
+
+  function blankTrack() { return { slots: [], revisions: [], media: [] }; }
+  function planSlot(cardId, when, intent) {
+    if (!cardId || !String(intent || '').trim()) throw new Error('Choose a card and an intention.');
+    return { id: uid('slot'), cardId, when: String(when || ''), intent: String(intent).trim(), createdAt: new Date().toISOString() };
+  }
+  function trackProjection(track, cards) {
+    return track.slots.map(slot => {
+      const card = cards.find(c => c.id === slot.cardId);
+      return { ...slot, title: card?.title || 'Missing card — hold',
+        category: card?.airedAt ? 'receipt' : 'prophecy',
+        airedAt: card?.airedAt || null, returnNote: card?.returnNote || '', status: card?.status || 'hold' };
+    });
+  }
+  function reviseFuture(track, cards, evidenceIds, learning, proposal, operator) {
+    const ids = stableUnique(evidenceIds);
+    if (!ids.length || ids.some(id => !cards.find(c => c.id === id)?.airedAt)) throw new Error('Learning requires witnessed air references.');
+    if (![learning, proposal, operator].every(v => String(v || '').trim())) throw new Error('Learning, future proposal and operator are required.');
+    return { id: uid('revision'), evidenceIds: ids, learning: String(learning), proposal: String(proposal), operator: String(operator),
+      createdAt: new Date().toISOString(), programmingAuthority: false };
+  }
+  function makeMedia(title, kind, rightsRef) {
+    if (!String(title || '').trim() || !['audio', 'video', 'voice-letter'].includes(kind)) throw new Error('Media title and supported kind required.');
+    return { id: uid('media'), title: String(title), kind, rightsRef: String(rightsRef || ''), reviews: [], responses: [], broadcast: false };
+  }
+  function sealResponse(media, listener, response) {
+    if (!media.sha256) throw new Error('Attach and identify the exact media bytes before listening.');
+    if (!String(listener || '').trim() || !String(response || '').trim()) throw new Error('Listener role and first response required.');
+    if (media.responses.length >= 2 || media.responses.some(r => r.listener === listener)) throw new Error('Two different listener roles, one sealed response each.');
+    return { listener, response, sha256: media.sha256, createdAt: new Date().toISOString() };
+  }
+  function reviewMedia(media, disposition, scope, operator) {
+    if (!['hold', 'refuse', 'admit'].includes(disposition)) throw new Error('Unsupported review.');
+    if (!String(operator || '').trim()) throw new Error('Identify the reviewing operator.');
+    if (disposition === 'admit' && !media.sha256) throw new Error('Attach exact local media bytes before admission.');
+    if (disposition === 'admit' && (!media.rightsRef.trim() || !String(scope || '').trim())) throw new Error('Admission requires a permission/license reference and permitted use.');
+    return { disposition, scope: String(scope || ''), operator, sha256: media.sha256 || null, createdAt: new Date().toISOString(), broadcast: false };
+  }
+  function bindMediaBytes(media, sha256) {
+    if (!/^[a-f0-9]{64}$/.test(sha256)) throw new Error('Expected SHA-256 of local bytes.');
+    if (media.sha256 && media.sha256 !== sha256) throw new Error('Different bytes require a new media reference and new first listens.');
+    media.sha256 = sha256;
+  }
+
   const core = {
+    blankTrack, planSlot, trackProjection, reviseFuture, makeMedia, sealResponse, reviewMedia, bindMediaBytes,
     VERSION, STORAGE_KEY, MEMORY_POLICY, RECENT_AIR_WINDOW, PORCH_SCHEMA, CUSTOMS_SCHEMA, HANDOFF_SCHEMA,
     OFFICIAL_LINKS, DOORS, BLOCKS, TRANSITIONS, blankState, safePublicRef, makePorchItem, recordCustoms, latestCustoms,
     admitPorchToWorkshop, makeShiftHandoff, receiveShiftHandoff, adoptShiftHandoff, asMoneyNumber, money, progress,
@@ -600,6 +651,8 @@
   }
 
   function render() {
+    state.track = state.track || blankTrack();
+    renderTrack();
     renderPulse();
     renderDoors();
     renderBlocks();
@@ -815,6 +868,10 @@
     if (index < 0) return;
     const card = state.cards[index];
     try {
+      if (card.mediaId && ['ready', 'aired'].includes(next)) {
+        const media = state.track?.media.find(m => m.id === card.mediaId);
+        if (media?.reviews.at(-1)?.disposition !== 'admit') throw new Error('Media use is currently held or refused. Review it before preparing or airing this card.');
+      }
       if (next === 'aired') {
         if (!confirm('Confirm that a human operator knows this segment actually aired. This is not inferred from a playlist or draft.')) return;
         state.cards[index] = transition(card, next, { confirmed: true });
@@ -840,7 +897,11 @@
   }
 
   function printRundown() {
-    const rundown = buildRundown(state.cards, state.sources);
+    const plannedIds = stableUnique((state.track?.slots || []).map(slot => slot.cardId));
+    const orderedCards = plannedIds.length
+      ? plannedIds.map(id => state.cards.find(card => card.id === id)).filter(Boolean)
+      : state.cards;
+    const rundown = buildRundown(orderedCards, state.sources);
     if (!rundown.length) {
       alert('Nothing is ready for the rundown yet.');
       return;
@@ -1060,6 +1121,69 @@
   q('#reset').addEventListener('click', () => {
     if (!confirm('Reset this browser-local room? Export first if you need the current state.')) return;
     state = blankState(); save(); render();
+  });
+
+
+  const localMedia = new Map();
+  function renderTrack() {
+    q('#track-card').innerHTML = state.cards.filter(c => !c.airedAt).map(c => '<option value="'+esc(c.id)+'">'+esc(c.title)+'</option>').join('');
+    q('#track-evidence').innerHTML = state.cards.filter(c => c.airedAt).map(c => '<label><input type="checkbox" value="'+esc(c.id)+'">'+esc(c.title)+'</label>').join('') || 'No witnessed airs yet.';
+    q('#track-slots').innerHTML = trackProjection(state.track, state.cards).map(s => '<article class="door-card"><span class="eyebrow">'+esc(s.category)+'</span><h3>'+esc(s.when)+' · '+esc(s.title)+'</h3><p>'+esc(s.intent)+'</p><small>'+esc(s.airedAt || 'Planned only; confirm air in Live Stack.')+'</small><p>'+esc(s.returnNote)+'</p></article>').join('') || '<p class="empty">Choose existing drafts to build an ordered campaign track.</p>';
+    q('#track-revisions').innerHTML = state.track.revisions.map(r => '<article class="door-card"><h3>Learning → future proposal</h3><p>'+esc(r.learning)+'</p><p><strong>PROPHECY:</strong> '+esc(r.proposal)+'</p><details><summary>Evidence and author</summary>'+esc(r.evidenceIds.join(', '))+' · '+esc(r.operator)+' · '+esc(r.createdAt)+'</details></article>').join('');
+    q('#track-media').innerHTML = state.track.media.map(m => {
+      const latest = m.reviews.at(-1);
+      return '<article class="door-card"><h3>'+esc(m.title)+'</h3><p>'+esc(m.kind)+' · '+esc(latest?.disposition || 'unreviewed')+'</p><p>Permission reference: '+esc(m.rightsRef || 'unknown')+'</p>'+ (localMedia.has(m.id) ? '<'+(m.kind === 'video'?'video':'audio')+' controls preload="metadata" src="'+esc(localMedia.get(m.id))+'" style="max-width:100%"></'+(m.kind === 'video'?'video':'audio')+'>' : '<p>Reattach local bytes after reopening; exports contain metadata only.</p>') +
+        '<footer><button data-media-attach="'+esc(m.id)+'">Attach local file</button><button data-media-listen="'+esc(m.id)+'">Seal first response</button><button data-media-review="'+esc(m.id)+'">Review permitted use</button><button data-media-draft="'+esc(m.id)+'">Create Workshop draft</button></footer>'+ (m.responses.length === 2 ? '<details><summary>Both sealed responses</summary>'+m.responses.map(r=>'<p>'+esc(r.listener)+': '+esc(r.response)+'</p>').join('')+'</details>' : '<p>'+m.responses.length+'/2 responses sealed; text hidden until both arrive.</p>') +'</article>';
+    }).join('');
+  }
+  q('#track-add').onclick = () => {
+    try { state.track.slots.push(planSlot(q('#track-card').value, q('#track-time').value, q('#track-intent').value)); save(); renderTrack(); }
+    catch(e) { alert(e.message); }
+  };
+  q('#track-revise').onclick = () => {
+    try { state.track.revisions.push(reviseFuture(state.track, state.cards, qa('#track-evidence input:checked').map(e=>e.value), q('#track-learning').value, q('#track-proposal').value, state.settings.operator)); save(); renderTrack(); }
+    catch(e) { alert(e.message); }
+  };
+  q('#media-add').onclick = () => {
+    try { state.track.media.push(makeMedia(q('#media-title').value, q('#media-kind').value, q('#media-rights').value)); save(); renderTrack(); }
+    catch(e) { alert(e.message); }
+  };
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-media-attach], [data-media-listen], [data-media-review], [data-media-draft]');
+    if (!button) return;
+    const id = Object.values(button.dataset)[0];
+    const m = state.track.media.find(m=>m.id === id);
+    if (!m) return;
+    try {
+      if (button.dataset.mediaAttach) {
+        const input = document.createElement('input'); input.type='file'; input.accept=m.kind==='video'?'video/*':'audio/*';
+        input.onchange=async()=>{
+          try {
+            const file=input.files[0]; if(!file) return;
+            const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer())), b=>b.toString(16).padStart(2,'0')).join('');
+            bindMediaBytes(m,hash);
+            if(localMedia.has(id)) URL.revokeObjectURL(localMedia.get(id));
+            localMedia.set(id, URL.createObjectURL(file)); save(); renderTrack();
+          } catch(e) { alert(e.message); }
+        }; input.click(); return;
+      }
+      if (button.dataset.mediaListen) {
+        const listener=prompt('Distinct listener role (do not enter private listener details):'); if(!listener) return;
+        const response=prompt('Your independent first response. The other response remains hidden until both are sealed.'); if(!response) return;
+        m.responses.push(sealResponse(m,listener,response));
+      }
+      if (button.dataset.mediaReview) {
+        const disposition=prompt('Review: hold / refuse / admit', 'hold'); if(!disposition) return;
+        const scope=prompt('Permitted use / review note:') || '';
+        m.reviews.push(reviewMedia(m,disposition,scope,state.settings.operator));
+      }
+      if (button.dataset.mediaDraft) {
+        const review=m.reviews.at(-1); if(review?.disposition!=='admit') throw new Error('Explicit permitted-use admission required first.');
+        const card=makeCard({doorId:'listener-story',title:m.title,copy:'MEDIA REFERENCE: '+m.id+'\nPermission: '+m.rightsRef+'\nPermitted use: '+review.scope+'\nDraft only. Recheck source and permitted use before air.',operator:state.settings.operator});
+        card.mediaId=m.id; state.cards.push(card);
+      }
+      save(); render();
+    } catch(e) { alert(e.message); }
   });
 
   render();
