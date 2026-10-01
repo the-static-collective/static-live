@@ -5,6 +5,9 @@
   const STORAGE_KEY = 'kinship-fall-share-room:v0.1';
   const MEMORY_POLICY = 'kinship-station-memory-from-toaster/v0.1';
   const RECENT_AIR_WINDOW = 12;
+  const PORCH_SCHEMA = 'kinship.porch-item/v0.1';
+  const CUSTOMS_SCHEMA = 'kinship.creative-customs/v0.1';
+  const HANDOFF_SCHEMA = 'kinship.shift-handoff/v0.1';
 
   const OFFICIAL_LINKS = [
     { id: 'fall-share', label: 'Fall Share 2026', href: 'https://kinshipradio.org/main/fall-share-2026-landing/', kind: 'station-public', protected: false },
@@ -167,8 +170,146 @@
       sources: OFFICIAL_LINKS.map(item => ({ ...item })),
       archive: [],
       memory: { verdicts: [] },
+      porch: { items: [], receipts: [] },
+      handoffs: { inbox: [], receipts: [] },
       settings: { date: '2026-09-29', operator: '' }
     };
+  }
+
+  function safePublicRef(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    let parsed;
+    try { parsed = new URL(raw); } catch { throw new Error('public reference must be a valid URL'); }
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('public reference must use http/https');
+    return parsed.href;
+  }
+
+  function makePorchItem({ title, origin = '', kind = 'story-lead', publicRef = '', rights = 'unknown', note = '', operator = '' }) {
+    const allowedKinds = new Set(['story-lead', 'event', 'public-link', 'voice-letter-ref', 'audio-ref', 'video-ref', 'idea']);
+    const allowedRights = new Set(['unknown', 'permission-declared', 'license-ref', 'station-owned-public']);
+    const cleanTitle = String(title || '').trim();
+    if (!cleanTitle) throw new Error('porch title required');
+    if (!allowedKinds.has(kind)) throw new Error('unsupported porch kind');
+    if (!allowedRights.has(rights)) throw new Error('unsupported rights posture');
+    return {
+      schema: PORCH_SCHEMA,
+      itemId: uid('porch'),
+      createdAt: new Date().toISOString(),
+      title: cleanTitle,
+      origin: String(origin || '').trim(),
+      kind,
+      publicRef: safePublicRef(publicRef),
+      rights,
+      note: String(note || '').trim(),
+      operator: String(operator || '').trim()
+    };
+  }
+
+  function recordCustoms(item, disposition, note = '') {
+    if (!item || item.schema !== PORCH_SCHEMA) throw new Error('known porch item required');
+    if (!['welcome', 'hold', 'refuse'].includes(disposition)) throw new Error('customs disposition must be welcome, hold, or refuse');
+    return {
+      schema: CUSTOMS_SCHEMA,
+      receiptId: uid('customs'),
+      itemId: item.itemId,
+      createdAt: new Date().toISOString(),
+      disposition,
+      note: String(note || '').trim(),
+      semanticEffect: 'none'
+    };
+  }
+
+  function latestCustoms(itemId, receipts = []) {
+    return receipts
+      .filter(receipt => receipt?.schema === CUSTOMS_SCHEMA && receipt.itemId === itemId)
+      .slice()
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)) || String(a.receiptId).localeCompare(String(b.receiptId)))
+      .at(-1) || null;
+  }
+
+  function admitPorchToWorkshop(item, receipts = [], operator = '') {
+    const latest = latestCustoms(item?.itemId, receipts);
+    if (!item || item.schema !== PORCH_SCHEMA) throw new Error('known porch item required');
+    if (latest?.disposition !== 'welcome') throw new Error('porch item must be welcomed before Workshop admission');
+    return makeCard({
+      doorId: item.kind === 'event' ? 'community-door' : 'listener-story',
+      title: item.title,
+      sourceIds: [],
+      claimMode: item.publicRef ? 'observed' : 'interpretation',
+      operator,
+      copy: [
+        'PORCH SOURCE',
+        item.publicRef || 'No public source attached. Treat this as a human-submitted lead, not established fact.',
+        '',
+        'MATERIAL',
+        item.note || item.title,
+        '',
+        'RIGHTS POSTURE',
+        item.rights + ' — Creative Customs WELCOME did not establish ownership, license, factual truth, or broadcast authority.'
+      ].join('\n')
+    });
+  }
+
+  function makeShiftHandoff(stateValue, fromOperator = '') {
+    const snapshot = {
+      station: stateValue.station,
+      title: stateValue.title,
+      pulse: structuredClone(stateValue.pulse),
+      cards: structuredClone(stateValue.cards),
+      sources: structuredClone(stateValue.sources),
+      memory: structuredClone(stateValue.memory || { verdicts: [] }),
+      porch: structuredClone(stateValue.porch || { items: [], receipts: [] }),
+      settings: structuredClone(stateValue.settings)
+    };
+    return {
+      schema: HANDOFF_SCHEMA,
+      handoffId: uid('handoff'),
+      createdAt: new Date().toISOString(),
+      fromOperator: String(fromOperator || '').trim(),
+      semanticEffect: 'none',
+      snapshot
+    };
+  }
+
+  function receiveShiftHandoff(value) {
+    if (!value || value.schema !== HANDOFF_SCHEMA || !value.handoffId || !value.snapshot) throw new Error('unsupported shift handoff');
+    if (!Array.isArray(value.snapshot.cards) || !Array.isArray(value.snapshot.sources)) throw new Error('shift handoff missing bounded room snapshot');
+    return {
+      schema: 'kinship.shift-receipt/v0.1',
+      receiptId: uid('shift-receipt'),
+      handoffId: value.handoffId,
+      createdAt: new Date().toISOString(),
+      disposition: 'received',
+      semanticEffect: 'none'
+    };
+  }
+
+  function adoptShiftHandoff(currentState, handoff, disposition) {
+    if (!['admit', 'hold', 'refuse'].includes(disposition)) throw new Error('shift disposition must be admit, hold, or refuse');
+    const receipt = {
+      schema: 'kinship.shift-receipt/v0.1',
+      receiptId: uid('shift-receipt'),
+      handoffId: handoff.handoffId,
+      createdAt: new Date().toISOString(),
+      disposition,
+      semanticEffect: disposition === 'admit' ? 'local-room-replaced-by-explicit-human-choice' : 'none'
+    };
+    if (disposition !== 'admit') return { state: currentState, receipt };
+
+    const next = {
+      ...currentState,
+      station: handoff.snapshot.station,
+      title: handoff.snapshot.title,
+      pulse: structuredClone(handoff.snapshot.pulse),
+      cards: structuredClone(handoff.snapshot.cards),
+      sources: structuredClone(handoff.snapshot.sources),
+      memory: structuredClone(handoff.snapshot.memory || { verdicts: [] }),
+      porch: structuredClone(handoff.snapshot.porch || { items: [], receipts: [] }),
+      settings: structuredClone(handoff.snapshot.settings),
+      handoffs: structuredClone(currentState.handoffs || { inbox: [], receipts: [] })
+    };
+    return { state: next, receipt };
   }
 
   function asMoneyNumber(value) {
@@ -417,9 +558,11 @@
   }
 
   const core = {
-    VERSION, STORAGE_KEY, MEMORY_POLICY, RECENT_AIR_WINDOW, OFFICIAL_LINKS, DOORS, BLOCKS, TRANSITIONS,
-    blankState, asMoneyNumber, money, progress, composeText, makeCard, transition, stationFeatures,
-    memoryVerdictWeight, makeMemoryVerdict, buildStationMemory, reopenCard, roomState, buildRundown, exportState
+    VERSION, STORAGE_KEY, MEMORY_POLICY, RECENT_AIR_WINDOW, PORCH_SCHEMA, CUSTOMS_SCHEMA, HANDOFF_SCHEMA,
+    OFFICIAL_LINKS, DOORS, BLOCKS, TRANSITIONS, blankState, safePublicRef, makePorchItem, recordCustoms, latestCustoms,
+    admitPorchToWorkshop, makeShiftHandoff, receiveShiftHandoff, adoptShiftHandoff, asMoneyNumber, money, progress,
+    composeText, makeCard, transition, stationFeatures, memoryVerdictWeight, makeMemoryVerdict, buildStationMemory,
+    reopenCard, roomState, buildRundown, exportState
   };
   root.KinshipRoomCore = core;
 
@@ -435,6 +578,8 @@
       const parsed = JSON.parse(raw);
       if (parsed.schema !== VERSION) return blankState();
       if (!parsed.memory || !Array.isArray(parsed.memory.verdicts)) parsed.memory = { verdicts: [] };
+      if (!parsed.porch || !Array.isArray(parsed.porch.items) || !Array.isArray(parsed.porch.receipts)) parsed.porch = { items: [], receipts: [] };
+      if (!parsed.handoffs || !Array.isArray(parsed.handoffs.inbox) || !Array.isArray(parsed.handoffs.receipts)) parsed.handoffs = { inbox: [], receipts: [] };
       for (const card of parsed.cards || []) if (!Object.prototype.hasOwnProperty.call(card, 'ancestorId')) card.ancestorId = null;
       return parsed;
     } catch {
@@ -459,9 +604,11 @@
     renderDoors();
     renderBlocks();
     renderSources();
+    renderPorch();
     renderCards();
     renderMemory();
     renderArchive();
+    renderHandoffs();
     renderState();
     q('#date').value = state.settings.date || '';
     q('#operator').value = state.settings.operator || '';
@@ -502,6 +649,27 @@
         '<a href="' + esc(source.href) + '" target="_blank" rel="noopener">open official source ↗</a>' +
       '</article>';
     }).join('');
+  }
+
+  function renderPorch() {
+    const items = state.porch?.items || [];
+    const receipts = state.porch?.receipts || [];
+    q('#porch-items').innerHTML = items.length ? items.map(item => {
+      const latest = latestCustoms(item.itemId, receipts);
+      const status = latest?.disposition || 'arrived';
+      return '<article class="porch-item">' +
+        '<header><div><span class="eyebrow">' + esc(item.kind) + '</span><h3>' + esc(item.title) + '</h3></div><span class="status">' + esc(status) + '</span></header>' +
+        '<p>' + esc(item.note || 'No note.') + '</p>' +
+        '<div class="segment-meta"><span>rights: ' + esc(item.rights) + '</span>' + (item.origin ? '<span>origin: ' + esc(item.origin) + '</span>' : '') + '</div>' +
+        (item.publicRef ? '<a href="' + esc(item.publicRef) + '" target="_blank" rel="noopener">open public reference ↗</a>' : '') +
+        '<footer>' +
+          '<button data-customs="welcome" data-id="' + esc(item.itemId) + '">WELCOME</button>' +
+          '<button data-customs="hold" data-id="' + esc(item.itemId) + '">HOLD</button>' +
+          '<button data-customs="refuse" data-id="' + esc(item.itemId) + '">REFUSE</button>' +
+          (status === 'welcome' ? '<button class="primary" data-porch-admit="' + esc(item.itemId) + '">Admit to Workshop</button>' : '') +
+        '</footer>' +
+      '</article>';
+    }).join('') : '<div class="empty">The Porch is empty. Nothing needs to arrive.</div>';
   }
 
   function cardButtons(card) {
@@ -571,6 +739,22 @@
     q('#return-archive').innerHTML = returned.length ? returned.map(card =>
       '<article class="archive-card"><strong>' + esc(card.title) + '</strong><p>' + esc(card.returnNote) + '</p><small>' + esc(card.airedAt || '') + '</small></article>'
     ).join('') : '<div class="empty">Nothing has returned yet. That is allowed.</div>';
+  }
+
+  function renderHandoffs() {
+    const inbox = state.handoffs?.inbox || [];
+    q('#handoff-inbox').innerHTML = inbox.length ? inbox.map(handoff =>
+      '<article class="handoff-card">' +
+        '<div><span class="eyebrow">RECEIVED · semantic effect none</span><h3>' + esc(handoff.fromOperator || 'Unnamed prior operator') + '</h3></div>' +
+        '<p>' + esc(handoff.createdAt) + ' · ' + esc(handoff.snapshot.cards.length) + ' card(s)</p>' +
+        '<code>' + esc(handoff.handoffId) + '</code>' +
+        '<footer>' +
+          '<button data-handoff="admit" data-id="' + esc(handoff.handoffId) + '">ADMIT AS WORKING ROOM</button>' +
+          '<button data-handoff="hold" data-id="' + esc(handoff.handoffId) + '">HOLD</button>' +
+          '<button data-handoff="refuse" data-id="' + esc(handoff.handoffId) + '">REFUSE</button>' +
+        '</footer>' +
+      '</article>'
+    ).join('') : '<div class="empty">No received shift handoff is waiting.</div>';
   }
 
   function renderState() {
@@ -718,6 +902,55 @@
       return;
     }
 
+    const customsButton = event.target.closest('[data-customs]');
+    if (customsButton) {
+      const item = state.porch.items.find(value => value.itemId === customsButton.dataset.id);
+      if (!item) return;
+      const note = prompt('Optional Creative Customs note:') || '';
+      state.porch.receipts.push(recordCustoms(item, customsButton.dataset.customs, note));
+      save(); renderPorch();
+      return;
+    }
+    const porchAdmit = event.target.closest('[data-porch-admit]');
+    if (porchAdmit) {
+      const item = state.porch.items.find(value => value.itemId === porchAdmit.dataset.porchAdmit);
+      try {
+        const card = admitPorchToWorkshop(item, state.porch.receipts, state.settings.operator);
+        if (item.publicRef) {
+          let source = state.sources.find(value => value.href === item.publicRef);
+          if (!source) {
+            source = { id: uid('source'), label: 'Porch: ' + item.title, href: item.publicRef, kind: 'porch-public', protected: false };
+            state.sources.push(source);
+          }
+          card.sourceIds = [source.id];
+        }
+        state.cards.push(card);
+        save(); render();
+        editCard(card.id);
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+    const handoffButton = event.target.closest('[data-handoff]');
+    if (handoffButton) {
+      const handoff = state.handoffs.inbox.find(value => value.handoffId === handoffButton.dataset.id);
+      if (!handoff) return;
+      const disposition = handoffButton.dataset.handoff;
+      if (disposition === 'admit' && !confirm('Replace the current working room with this received shift snapshot? Export the current room first if you need it.')) return;
+      try {
+        const result = adoptShiftHandoff(state, handoff, disposition);
+        result.state.handoffs = result.state.handoffs || { inbox: [], receipts: [] };
+        result.state.handoffs.receipts.push(result.receipt);
+        result.state.handoffs.inbox = result.state.handoffs.inbox.filter(value => value.handoffId !== handoff.handoffId);
+        state = result.state;
+        save(); render();
+      } catch (error) {
+        alert(error.message);
+      }
+      return;
+    }
+
     const transitionButton = event.target.closest('[data-transition]');
     if (transitionButton) {
       moveCard(transitionButton.dataset.id, transitionButton.dataset.transition);
@@ -756,6 +989,49 @@
     q('#new-source-label').value = '';
     q('#new-source-url').value = '';
     save(); renderSources();
+  });
+
+  q('#porch-add').addEventListener('click', () => {
+    try {
+      const item = makePorchItem({
+        title: q('#porch-title').value,
+        origin: q('#porch-origin').value,
+        kind: q('#porch-kind').value,
+        publicRef: q('#porch-ref').value,
+        rights: q('#porch-rights').value,
+        note: q('#porch-note').value,
+        operator: state.settings.operator
+      });
+      state.porch.items.push(item);
+      for (const id of ['#porch-title','#porch-origin','#porch-ref','#porch-note']) q(id).value = '';
+      save(); renderPorch();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  q('#handoff-export').addEventListener('click', () => {
+    const handoff = makeShiftHandoff(state, state.settings.operator);
+    download('kinship-shift-handoff.json', JSON.stringify(handoff, null, 2));
+  });
+
+  q('#handoff-import').addEventListener('change', event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const handoff = JSON.parse(reader.result);
+        const receipt = receiveShiftHandoff(handoff);
+        state.handoffs.inbox.push(handoff);
+        state.handoffs.receipts.push(receipt);
+        save(); renderHandoffs();
+      } catch (error) {
+        alert('Shift handoff refused: ' + error.message);
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
   });
 
   q('#date').addEventListener('change', event => { state.settings.date = event.target.value; save(); });
