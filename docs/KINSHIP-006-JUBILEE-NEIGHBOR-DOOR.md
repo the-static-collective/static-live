@@ -68,6 +68,8 @@ The signed bundle format is the **entire versioned history array** exported by J
 
 **Do not copy these fixture attestations into a real operator review**; those true values must describe checks the human actually performed. This is not an authenticated editorial identity system. A declared review cannot prove station employment, beneficiary consent or authenticity. If there is no reviewed, reachable, approved response route, use HOLD, not READY.
 
+The output also has a `bridgeReceiptId`: a deterministic SHA-256 commitment over the existing Kinship radio-pack receipt, the exact Treasury source provenance, and all bridge routing refusals. It is an inspectable digest, **not** a signature or independent station witness.
+
 `pack` reuses `compileKinshipPilot()` and retains its `ready != aired != station approval` semantics and explicit boundaries: broadcast, publishing, OBS control, prayer-request ingest, listener inference and station-adoption claims remain false. If a producer marks a candidate READY, it becomes eligible for further human consideration only.
 
 The pack deliberately does not repeat a free-text need title, description, street address, contact or media/payment link. It uses validated controlled resource/unit tokens and a precise SHA-256 signed-snapshot reference. Coarse-region metadata and original free text remain unbroadcast. No amount of cryptography turns an owner-signed plea into independently verified need.
