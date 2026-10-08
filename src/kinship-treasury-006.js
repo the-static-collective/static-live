@@ -124,10 +124,17 @@ export function makeReviewedRadioPack(bundle, review, edition) {
       sourceRefs: [{ ref: 'https://kinshipradio.org/main/', label: 'Kinship public home (not an endorsement of this request)', authority: 'station-public' }] },
     edition, candidates: [candidate]
   });
-  return { ...pack, treasuryProvenance: porch.source, routing: {
+  const routing = {
     externalPayment: false, listenerData: false, officialGivingUnchanged: true,
     aired: false, adoption: false, actionRouteProven: false
-  } };
+  };
+  // The existing KINSHIP-001 receipt covers only the radio pack. A separate
+  // bridge digest binds that exact pack to its imported Treasury provenance.
+  // This hash is not a signature or station witness.
+  const bridgeReceiptId = 'sha256:' + sha256({
+    radioPackReceiptId: pack.receiptId, treasuryProvenance: porch.source, routing
+  });
+  return { ...pack, treasuryProvenance: porch.source, routing, bridgeReceiptId };
 }
 
 function writeExclusive(path, payload) {
