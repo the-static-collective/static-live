@@ -213,3 +213,9 @@ LIVE-001 intentionally does not implement MIDI/OSC device control, audio playbac
 Design: `docs/superpowers/specs/2026-09-13-live-001-band-can-lose-a-limb-design.md`
 
 Plan: `docs/superpowers/plans/2026-09-13-live-001-band-can-lose-a-limb.md`
+
+## KINSHIP-006 — Jubilee Treasury neighbor-help bridge
+
+A small **read-only, human-reviewed** adapter imports a complete signed [Jubilee Treasury](https://github.com/the-static-collective/Jubilee-treasury/pull/2) public-need history, verifies signatures and contiguous revisions, and prepares a nonfinancial **HELD** neighbor-help lead. A separate declared human review can create an existing KINSHIP-001 radio-pack candidate, without implying broadcast, Kinship adoption, identity verification, recipient consent, or money-handling capability.
+
+Use `node src/kinship-treasury-006.js porch BUNDLE OUT`, then (after real human checks) `node src/kinship-treasury-006.js pack BUNDLE REVIEW EDITION OUT`. See [KINSHIP-006 boundaries](docs/KINSHIP-006-JUBILEE-NEIGHBOR-DOOR.md). Kinship's station-owned giving, prayer, volunteers, and editorial workflows remain separate.
