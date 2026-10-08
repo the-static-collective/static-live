@@ -1754,8 +1754,10 @@ return becomes future memory — not retroactive proof</pre>
         (gift.kind !== 'statement' ? player : '') +
         '<footer>' + (!gift.withdrawnAt ? (
           (gift.kind !== 'statement' ? '<button data-gift-attach="' + esc(gift.id) + '">Attach exact file</button>' : '') +
+          '<button data-gift-review="quote" data-id="' + esc(gift.id) + '">Review quotation</button>' +
           '<button data-gift-review="broadcast" data-id="' + esc(gift.id) + '">Review broadcast</button>' +
           '<button data-gift-review="gallery" data-id="' + esc(gift.id) + '">Review gallery</button>' +
+          '<button data-gift-review="archive" data-id="' + esc(gift.id) + '">Review future reuse</button>' +
           '<button data-gift-draft="' + esc(gift.id) + '">Workshop draft</button>' +
           '<button class="danger ghost" data-gift-withdraw="' + esc(gift.id) + '">Withdraw / restrict</button>'
         ) : '<strong>WITHDRAWN — no new use</strong>') + '</footer></article>';
