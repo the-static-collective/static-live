@@ -139,3 +139,11 @@ footer { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem
   body.printing .print-only section { break-inside: avoid; border-top: 1px solid #aaa; padding-top: .7rem; margin-top: .7rem; }
   body.printing .print-only pre { white-space: pre-wrap; font: 11pt/1.4 Georgia, serif; }
 }
+
+/* KINSHIP-007: local, consent-scoped Living Gifts */
+.gift-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 1rem; margin: 1rem 0; }
+.gift-card { overflow-wrap: anywhere; }
+.gift-media { display: block; max-width: 100%; max-height: 320px; object-fit: contain; margin: .75rem 0; border-radius: 8px; }
+#gift-permissions { display: flex; flex-wrap: wrap; gap: .8rem; border: 1px solid var(--line); border-radius: 10px; padding: .7rem; }
+#gift-permissions label { display: inline-flex; align-items: center; gap: .3rem; }
+#gift-permissions legend { font-weight: 700; }
