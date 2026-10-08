@@ -11,7 +11,7 @@
   <div class="shell">
     <header class="masthead">
       <div>
-        <p class="eyebrow">KINSHIP-005 · LOCAL GIFT SURFACE</p>
+        <p class="eyebrow">KINSHIP-007 · LOCAL LIVING GIFTS</p>
         <h1>Kinship Fall Share Room</h1>
         <p class="lede">A small room for a big week: prepare the radio, keep the human in the chair, remember what came back.</p>
       </div>
@@ -29,7 +29,7 @@
 
     <nav class="room-nav" aria-label="Room locations">
       <a href="#threshold">Threshold</a><a href="#campaign">Campaign track</a><a href="#media-review">Media Lego</a>
-      <a href="#porch">Porch</a>
+      <a href="#porch">Porch</a><a href="#living-gifts">Living Gifts</a>
       <a href="#composer">Workshop</a>
       <a href="#sources">Source Shelf</a>
       <a href="#stack">Live Stack</a>
@@ -136,6 +136,31 @@
           <button id="porch-add">Place on Porch</button>
         </div>
         <div id="porch-items" class="porch-items"></div>
+      </section>
+
+
+      <section id="living-gifts" class="room">
+        <div class="room-title"><div><p class="eyebrow">KINSHIP-007 · WORLD LISTENING BACK</p><h2>Living Gifts</h2></div>
+          <p>A piece of lived life may be offered without a money gift. It never becomes public by arrival.</p></div>
+        <aside class="boundary">Operator-local specimen only; not a submission site. Enter only non-sensitive material volunteered with appropriate permission. No donor profiles, prayer requests, financial information, children or identifiable third parties without verified permission. Browser storage and JSON exports are not private vaults. Exact media bytes stay on this device and are never exported. Operator review is not Kinship approval.</aside>
+        <div class="porch-form">
+          <label>Title <input id="gift-title" maxlength="120" placeholder="Sunrise on the drive to work"></label>
+          <label>Form <select id="gift-kind"><option value="statement">Statement / memory</option><option value="photo">Photograph</option><option value="video">Video</option><option value="audio">Voice / audio</option></select></label>
+          <label>Contributor-chosen credit <input id="gift-credit" maxlength="80" placeholder="Anonymous (default)"></label>
+          <label>Permission evidence reference <input id="gift-rights" maxlength="160" placeholder="Operator-held release reference, not a private URL"></label>
+          <label class="wide">Words / context (2000 characters maximum)<textarea id="gift-note" maxlength="2000" rows="4" placeholder="What was offered? For statements, enter the exact contributor-provided words."></textarea></label>
+          <fieldset id="gift-permissions" class="wide"><legend>Specific uses offered by contributor — optional, NONE selected by default</legend>
+            <label><input type="checkbox" value="quote"> Quotation in draft</label>
+            <label><input type="checkbox" value="broadcast"> Consider for on-air use</label>
+            <label><input type="checkbox" value="gallery"> Consider for gallery display</label>
+            <label><input type="checkbox" value="archive"> Consider for future archive/reuse</label>
+          </fieldset>
+          <button id="gift-add">Place on held Living Gifts shelf</button>
+        </div>
+        <div id="gift-items" class="gift-grid"></div>
+        <h3>World Listening Back — operator-local gallery preview</h3>
+        <p class="micro">Only separately gallery-admitted gifts appear below; previews are not published, syndicated or broadcast. Reattach exact local media after reopening. All new uses require a current station decision.</p>
+        <div id="gift-gallery" class="gift-grid"></div>
       </section>
 
       <section id="composer" class="room">
