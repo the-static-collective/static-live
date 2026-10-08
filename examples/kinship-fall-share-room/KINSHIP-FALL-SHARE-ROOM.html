@@ -148,13 +148,21 @@ footer { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem
   body.printing .print-only pre { white-space: pre-wrap; font: 11pt/1.4 Georgia, serif; }
 }
 
+/* KINSHIP-007: local, consent-scoped Living Gifts */
+.gift-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 1rem; margin: 1rem 0; }
+.gift-card { overflow-wrap: anywhere; }
+.gift-media { display: block; max-width: 100%; max-height: 320px; object-fit: contain; margin: .75rem 0; border-radius: 8px; }
+#gift-permissions { display: flex; flex-wrap: wrap; gap: .8rem; border: 1px solid var(--line); border-radius: 10px; padding: .7rem; }
+#gift-permissions label { display: inline-flex; align-items: center; gap: .3rem; }
+#gift-permissions legend { font-weight: 700; }
+
 </style>
 </head>
 <body>
   <div class="shell">
     <header class="masthead">
       <div>
-        <p class="eyebrow">KINSHIP-005 · LOCAL GIFT SURFACE</p>
+        <p class="eyebrow">KINSHIP-007 · LOCAL LIVING GIFTS</p>
         <h1>Kinship Fall Share Room</h1>
         <p class="lede">A small room for a big week: prepare the radio, keep the human in the chair, remember what came back.</p>
       </div>
@@ -172,7 +180,7 @@ footer { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem
 
     <nav class="room-nav" aria-label="Room locations">
       <a href="#threshold">Threshold</a><a href="#campaign">Campaign track</a><a href="#media-review">Media Lego</a>
-      <a href="#porch">Porch</a>
+      <a href="#porch">Porch</a><a href="#living-gifts">Living Gifts</a>
       <a href="#composer">Workshop</a>
       <a href="#sources">Source Shelf</a>
       <a href="#stack">Live Stack</a>
@@ -279,6 +287,31 @@ footer { display: flex; justify-content: space-between; gap: 2rem; padding: 2rem
           <button id="porch-add">Place on Porch</button>
         </div>
         <div id="porch-items" class="porch-items"></div>
+      </section>
+
+
+      <section id="living-gifts" class="room">
+        <div class="room-title"><div><p class="eyebrow">KINSHIP-007 · WORLD LISTENING BACK</p><h2>Living Gifts</h2></div>
+          <p>A piece of lived life may be offered without a money gift. It never becomes public by arrival.</p></div>
+        <aside class="boundary">Operator-local specimen only; not a submission site. Enter only non-sensitive material volunteered with appropriate permission. No donor profiles, prayer requests, financial information, children or identifiable third parties without verified permission. Browser storage and JSON exports are not private vaults. Exact media bytes stay on this device and are never exported. Operator review is not Kinship approval.</aside>
+        <div class="porch-form">
+          <label>Title <input id="gift-title" maxlength="120" placeholder="Sunrise on the drive to work"></label>
+          <label>Form <select id="gift-kind"><option value="statement">Statement / memory</option><option value="photo">Photograph</option><option value="video">Video</option><option value="audio">Voice / audio</option></select></label>
+          <label>Contributor-chosen credit <input id="gift-credit" maxlength="80" placeholder="Anonymous (default)"></label>
+          <label>Permission evidence reference <input id="gift-rights" maxlength="160" placeholder="Operator-held release reference, not a private URL"></label>
+          <label class="wide">Words / context (2000 characters maximum)<textarea id="gift-note" maxlength="2000" rows="4" placeholder="What was offered? For statements, enter the exact contributor-provided words."></textarea></label>
+          <fieldset id="gift-permissions" class="wide"><legend>Specific uses offered by contributor — optional, NONE selected by default</legend>
+            <label><input type="checkbox" value="quote"> Quotation in draft</label>
+            <label><input type="checkbox" value="broadcast"> Consider for on-air use</label>
+            <label><input type="checkbox" value="gallery"> Consider for gallery display</label>
+            <label><input type="checkbox" value="archive"> Consider for future archive/reuse</label>
+          </fieldset>
+          <button id="gift-add">Place on held Living Gifts shelf</button>
+        </div>
+        <div id="gift-items" class="gift-grid"></div>
+        <h3>World Listening Back — operator-local gallery preview</h3>
+        <p class="micro">Only separately gallery-admitted gifts appear below; previews are not published, syndicated or broadcast. Reattach exact local media after reopening. All new uses require a current station decision.</p>
+        <div id="gift-gallery" class="gift-grid"></div>
       </section>
 
       <section id="composer" class="room">
@@ -587,6 +620,140 @@ return becomes future memory — not retroactive proof</pre>
     return [first, second, third, fourth];
   }
 
+
+  // KINSHIP-007: consent and editorial use belong to people, not a donor ledger.
+  const LIVING_GIFT_SCHEMA = 'kinship.living-gift/v0.1';
+  const GIFT_KINDS = ['statement', 'photo', 'audio', 'video'];
+  const GIFT_USES = ['quote', 'broadcast', 'gallery', 'archive'];
+  const GIFT_MIMES = {
+    photo: ['image/jpeg', 'image/png', 'image/webp'],
+    audio: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/webm'],
+    video: ['video/mp4', 'video/webm']
+  };
+  const MAX_GIFT_FILE = 50 * 1024 * 1024;
+
+  function giftText(value, maximum, field, required = false) {
+    if (typeof value !== 'string') throw new Error(field + ' must be text');
+    const result = value.trim();
+    if (result.length > maximum || (required && !result)) throw new Error(field + ' is missing or too long');
+    return result;
+  }
+  function makeLivingGift({ title, kind, attribution = '', note = '', rightsRef = '', permissions = [] }) {
+    if (!GIFT_KINDS.includes(kind)) throw new Error('Unsupported Living Gift form');
+    if (!Array.isArray(permissions) || permissions.some(p => !GIFT_USES.includes(p))) throw new Error('Unknown proposed use');
+    const cleanNote = giftText(note, 2000, 'statement / caption', kind === 'statement');
+    return {
+      schema: LIVING_GIFT_SCHEMA, id: uid('gift'), createdAt: new Date().toISOString(),
+      title: giftText(title, 120, 'title', true), kind,
+      attribution: giftText(attribution, 80, 'public credit') || 'Anonymous',
+      note: cleanNote, rightsRef: giftText(rightsRef, 160, 'permission evidence reference'),
+      permissions: [...new Set(permissions)], asset: null, reviews: [], withdrawnAt: null,
+      needsRecheck: false, needsReattach: false, trustedReviewCount: 0
+    };
+  }
+  function bindLivingGiftAsset(gift, sha256, mime, size) {
+    if (!gift || !GIFT_MIMES[gift.kind]) throw new Error('This form does not use files');
+    if (typeof sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(sha256)) throw new Error('Exact SHA-256 required');
+    if (!GIFT_MIMES[gift.kind].includes(mime)) throw new Error('Unsupported media type');
+    if (!Number.isSafeInteger(size) || size < 1 || size > MAX_GIFT_FILE) throw new Error('File size exceeds local safe limit');
+    if (gift.asset && (gift.asset.sha256 !== sha256 || gift.asset.mime !== mime || gift.asset.size !== size))
+      throw new Error('Changed bytes require a new Living Gift and new permissions');
+    gift.asset = { sha256, mime, size };
+    gift.needsReattach = false;
+    return gift.asset;
+  }
+  function reviewLivingGift(gift, use, disposition, operator, releaseCheck = '') {
+    if (!gift || gift.schema !== LIVING_GIFT_SCHEMA || gift.withdrawnAt) throw new Error('Living Gift has been withdrawn or is unknown');
+    if (!GIFT_USES.includes(use) || !['hold', 'refuse', 'admit'].includes(disposition)) throw new Error('Unknown scope or review decision');
+    const reviewer = giftText(operator, 100, 'human reviewer', true);
+    const evidence = giftText(releaseCheck, 200, 'release review reference');
+    if (disposition === 'admit') {
+      if (!gift.permissions.includes(use)) throw new Error('Contributor did not offer this use');
+      if (!gift.rightsRef || !evidence) throw new Error('Human check of applicable release is required');
+      if (gift.kind !== 'statement' && (!gift.asset || gift.needsReattach)) throw new Error('Exact local media bytes must be attached');
+    }
+    const receipt = {
+      id: uid('gift-review'), createdAt: new Date().toISOString(), use, disposition,
+      operator: reviewer, releaseCheck: evidence,
+      assetSha256: gift.asset?.sha256 || null,
+      publicationAuthority: false
+    };
+    gift.reviews.push(receipt);
+    gift.needsRecheck = false; // imported earlier reviews remain behind the trust boundary
+    return receipt;
+  }
+  function livingGiftUseEligible(gift, use) {
+    if (!gift || gift.schema !== LIVING_GIFT_SCHEMA || gift.withdrawnAt || gift.needsRecheck ||
+        !GIFT_USES.includes(use) || !Array.isArray(gift.permissions) || !gift.permissions.includes(use)) return false;
+    if (gift.kind !== 'statement' && (!gift.asset?.sha256 || gift.needsReattach)) return false;
+    const trusted = (gift.reviews || []).slice(gift.trustedReviewCount || 0).filter(r => r.use === use);
+    const last = trusted.at(-1);
+    return !!(last && last.disposition === 'admit' && last.assetSha256 === (gift.asset?.sha256 || null) &&
+      last.publicationAuthority === false);
+  }
+  function withdrawLivingGift(gift, operator, reason = '') {
+    if (!gift || gift.schema !== LIVING_GIFT_SCHEMA || gift.withdrawnAt) throw new Error('Gift already withdrawn or unknown');
+    const by = giftText(operator, 100, 'operator', true);
+    const note = giftText(reason, 200, 'withdrawal note');
+    gift.withdrawnAt = new Date().toISOString();
+    gift.reviews.push({ id: uid('gift-review'), createdAt: gift.withdrawnAt, use: 'all',
+      disposition: 'withdraw', operator: by, note, publicationAuthority: false });
+    return gift;
+  }
+  function assertLivingGiftShape(gift) {
+    const fields = ['schema','id','createdAt','title','kind','attribution','note','rightsRef',
+      'permissions','asset','reviews','withdrawnAt','needsRecheck','needsReattach','trustedReviewCount'];
+    if (!gift || typeof gift !== 'object' || Array.isArray(gift) ||
+        Object.keys(gift).some(k => !fields.includes(k)) || gift.schema !== LIVING_GIFT_SCHEMA ||
+        !giftText(gift.id, 100, 'id', true) ||
+        !GIFT_KINDS.includes(gift.kind) || !Array.isArray(gift.permissions) ||
+        gift.permissions.some(p => !GIFT_USES.includes(p)) || !Array.isArray(gift.reviews) ||
+        gift.reviews.length > 100) throw new Error('Malformed or unbounded Living Gift import');
+    giftText(gift.title, 120, 'title', true); giftText(gift.attribution, 80, 'credit');
+    giftText(gift.note, 2000, 'note'); giftText(gift.rightsRef, 160, 'rights');
+    if (gift.asset && (!GIFT_MIMES[gift.kind]?.includes(gift.asset.mime) ||
+      !/^[a-f0-9]{64}$/.test(gift.asset.sha256) ||
+      !Number.isSafeInteger(gift.asset.size) || gift.asset.size < 1 || gift.asset.size > MAX_GIFT_FILE ||
+      Object.keys(gift.asset).some(k => !['sha256','mime','size'].includes(k))))
+      throw new Error('Malformed or unsupported Living Gift asset');
+    return gift;
+  }
+  function recheckImportedLivingGifts(value) {
+    if (!value || !Array.isArray(value.items) || value.items.length > 100) throw new Error('Invalid Living Gift shelf');
+    return { items: value.items.map(original => {
+      const gift = structuredClone(assertLivingGiftShape(original));
+      gift.needsRecheck = true; // nobody imports an editorial approval
+      gift.needsReattach = !!gift.asset; // exact bytes are never in handoffs/exports
+      gift.trustedReviewCount = gift.reviews.length; // previous admissions are history, not local grants
+      return gift;
+    }) };
+  }
+  function draftFromLivingGift(gift, operator = '') {
+    if (!livingGiftUseEligible(gift, 'broadcast')) throw new Error('A current broadcast-specific human review is required');
+    const card = makeCard({ doorId: 'listener-story', title: gift.title,
+      copy: 'LIVING GIFT · REVIEWABLE DRAFT ONLY\nAttribution: ' + gift.attribution +
+        '\nSource: ' + gift.id + '\n' + gift.note +
+        '\n\nProducer: verify subject, release, exact media, and current permission before any air.',
+      operator });
+    card.livingGiftId = gift.id;
+    card.livingGiftAssetHash = gift.asset?.sha256 || null;
+    return card;
+  }
+  function enforceLivingGiftUse(card, gifts) {
+    if (!card.livingGiftId) return true;
+    const gift = gifts?.items?.find(g => g.id === card.livingGiftId);
+    if (!livingGiftUseEligible(gift, 'broadcast') ||
+        card.livingGiftAssetHash !== (gift.asset?.sha256 || null))
+      throw new Error('Living Gift broadcast permission is absent, stale, or withdrawn; hold this card');
+    return true;
+  }
+  function holdUnbroadcastLivingGiftCards(cards, giftId) {
+    for (const card of cards) if (card.livingGiftId === giftId && !card.airedAt) {
+      card.copy = 'HELD — Living Gift permission withdrawn or requires renewed review. Original draft copy is no longer retained here.';
+      card.status = 'hold';
+    }
+  }
+
   function blankState() {
     return {
       schema: VERSION,
@@ -600,6 +767,7 @@ return becomes future memory — not retroactive proof</pre>
       track: blankTrack(),
       memory: { verdicts: [] },
       porch: { items: [], receipts: [] },
+      livingGifts: { items: [] },
       handoffs: { inbox: [], receipts: [] },
       settings: { date: '', operator: '' }
     };
@@ -689,6 +857,7 @@ return becomes future memory — not retroactive proof</pre>
       sources: structuredClone(stateValue.sources),
       memory: structuredClone(stateValue.memory || { verdicts: [] }),
       porch: structuredClone(stateValue.porch || { items: [], receipts: [] }),
+      livingGifts: structuredClone(stateValue.livingGifts || { items: [] }),
       track: structuredClone(stateValue.track || blankTrack()),
       settings: structuredClone(stateValue.settings)
     };
@@ -736,10 +905,12 @@ return becomes future memory — not retroactive proof</pre>
       sources: structuredClone(handoff.snapshot.sources),
       memory: structuredClone(handoff.snapshot.memory || { verdicts: [] }),
       porch: structuredClone(handoff.snapshot.porch || { items: [], receipts: [] }),
+      livingGifts: recheckImportedLivingGifts(handoff.snapshot.livingGifts || { items: [] }),
       track: structuredClone(handoff.snapshot.track || blankTrack()),
       settings: structuredClone(handoff.snapshot.settings),
       handoffs: structuredClone(currentState.handoffs || { inbox: [], receipts: [] })
     };
+    for (const gift of next.livingGifts.items) holdUnbroadcastLivingGiftCards(next.cards, gift.id);
     return { state: next, receipt };
   }
 
@@ -1034,6 +1205,9 @@ return becomes future memory — not retroactive proof</pre>
 
   const core = {
     blankTrack, planSlot, trackProjection, reviseFuture, makeMedia, sealResponse, reviewMedia, bindMediaBytes,
+    LIVING_GIFT_SCHEMA, GIFT_KINDS, GIFT_USES, makeLivingGift, bindLivingGiftAsset, reviewLivingGift,
+    livingGiftUseEligible, withdrawLivingGift, recheckImportedLivingGifts, draftFromLivingGift,
+    enforceLivingGiftUse, holdUnbroadcastLivingGiftCards,
     VERSION, STORAGE_KEY, MEMORY_POLICY, RECENT_AIR_WINDOW, PORCH_SCHEMA, CUSTOMS_SCHEMA, HANDOFF_SCHEMA,
     OFFICIAL_LINKS, DOORS, BLOCKS, TRANSITIONS, blankState, safePublicRef, makePorchItem, recordCustoms, latestCustoms,
     admitPorchToWorkshop, makeShiftHandoff, receiveShiftHandoff, adoptShiftHandoff, asMoneyNumber, money, progress,
@@ -1055,6 +1229,13 @@ return becomes future memory — not retroactive proof</pre>
       if (parsed.schema !== VERSION) return blankState();
       if (!parsed.memory || !Array.isArray(parsed.memory.verdicts)) parsed.memory = { verdicts: [] };
       if (!parsed.porch || !Array.isArray(parsed.porch.items) || !Array.isArray(parsed.porch.receipts)) parsed.porch = { items: [], receipts: [] };
+      if (!parsed.livingGifts) parsed.livingGifts = { items: [] };
+      // Local media never survives the browser process even if its digest remains.
+      parsed.livingGifts.items = (parsed.livingGifts.items || []).map(gift => {
+        assertLivingGiftShape(gift);
+        gift.needsReattach = !!gift.asset;
+        return gift;
+      });
       if (!parsed.handoffs || !Array.isArray(parsed.handoffs.inbox) || !Array.isArray(parsed.handoffs.receipts)) parsed.handoffs = { inbox: [], receipts: [] };
       for (const card of parsed.cards || []) if (!Object.prototype.hasOwnProperty.call(card, 'ancestorId')) card.ancestorId = null;
       return parsed;
@@ -1083,6 +1264,7 @@ return becomes future memory — not retroactive proof</pre>
     renderBlocks();
     renderSources();
     renderPorch();
+    renderLivingGifts();
     renderCards();
     renderMemory();
     renderArchive();
@@ -1293,6 +1475,7 @@ return becomes future memory — not retroactive proof</pre>
     if (index < 0) return;
     const card = state.cards[index];
     try {
+      if (['ready', 'aired'].includes(next)) enforceLivingGiftUse(card, state.livingGifts);
       if (card.mediaId && ['ready', 'aired'].includes(next)) {
         const media = state.track?.media.find(m => m.id === card.mediaId);
         if (media?.reviews.at(-1)?.disposition !== 'admit') throw new Error('Media use is currently held or refused. Review it before preparing or airing this card.');
@@ -1534,6 +1717,8 @@ return becomes future memory — not retroactive proof</pre>
       try {
         const parsed = JSON.parse(reader.result);
         if (parsed.schema !== VERSION || !Array.isArray(parsed.cards) || !Array.isArray(parsed.sources)) throw new Error('unsupported room file');
+        parsed.livingGifts = recheckImportedLivingGifts(parsed.livingGifts || { items: [] });
+        for (const gift of parsed.livingGifts.items) holdUnbroadcastLivingGiftCards(parsed.cards, gift.id);
         state = parsed;
         save(); render();
       } catch (error) {
@@ -1548,6 +1733,103 @@ return becomes future memory — not retroactive proof</pre>
     state = blankState(); save(); render();
   });
 
+
+
+  // The gallery is local editorial preview only, not a public station page.
+  const localGiftMedia = new Map();
+  function renderLivingGifts() {
+    const shelf = state.livingGifts?.items || [];
+    q('#gift-items').innerHTML = shelf.length ? shelf.map(gift => {
+      const current = gift.reviews.at(-1)?.disposition || 'held';
+      const attached = localGiftMedia.get(gift.id);
+      const player = !attached ? '<p>Local file absent. Reattach exact bytes to review/use.</p>' :
+        gift.kind === 'photo' ? '<img class="gift-media" alt="Locally offered photo" src="' + esc(attached) + '">' :
+        '<' + (gift.kind === 'video' ? 'video' : 'audio') + ' class="gift-media" controls preload="none" src="' + esc(attached) + '"></' + (gift.kind === 'video' ? 'video' : 'audio') + '>';
+      return '<article class="door-card gift-card"><header><div><span class="eyebrow">' + esc(gift.kind) +
+        ' · ' + esc(current) + '</span><h3>' + esc(gift.title) + '</h3></div></header>' +
+        '<p>Credit: ' + esc(gift.attribution) + '</p><p>' + esc(gift.note) + '</p>' +
+        '<p class="micro">Offered uses: ' + esc(gift.permissions.join(', ') || 'private review only') +
+        ' · hash: ' + esc(gift.asset?.sha256 || 'text only / unbound') +
+        (gift.needsRecheck ? ' · fresh review required' : '') + '</p>' +
+        (gift.kind !== 'statement' ? player : '') +
+        '<footer>' + (!gift.withdrawnAt ? (
+          (gift.kind !== 'statement' ? '<button data-gift-attach="' + esc(gift.id) + '">Attach exact file</button>' : '') +
+          '<button data-gift-review="broadcast" data-id="' + esc(gift.id) + '">Review broadcast</button>' +
+          '<button data-gift-review="gallery" data-id="' + esc(gift.id) + '">Review gallery</button>' +
+          '<button data-gift-draft="' + esc(gift.id) + '">Workshop draft</button>' +
+          '<button class="danger ghost" data-gift-withdraw="' + esc(gift.id) + '">Withdraw / restrict</button>'
+        ) : '<strong>WITHDRAWN — no new use</strong>') + '</footer></article>';
+    }).join('') : '<p class="empty">No Living Gifts yet. Participation never requires a payment.</p>';
+    const visible = shelf.filter(g => livingGiftUseEligible(g, 'gallery'));
+    q('#gift-gallery').innerHTML = visible.length ? visible.map(g => {
+      const attached = localGiftMedia.get(g.id);
+      const media = g.kind === 'photo' && attached ? '<img class="gift-media" alt="Reviewed local photo" src="' + esc(attached) + '">' :
+        g.kind === 'video' && attached ? '<video class="gift-media" controls preload="none" src="' + esc(attached) + '"></video>' :
+        g.kind === 'audio' && attached ? '<audio class="gift-media" controls preload="none" src="' + esc(attached) + '"></audio>' : '';
+      return '<article class="door-card"><h3>' + esc(g.title) + '</h3>' + media +
+        '<p>' + esc(g.note) + '</p><small>' + esc(g.attribution) + ' · editorial preview, not public</small></article>';
+    }).join('') : '<p class="empty">No gallery-specific admitted material yet. A broadcast permission does not grant web display.</p>';
+  }
+  q('#gift-add').addEventListener('click', () => {
+    try {
+      const permissions = qa('#gift-permissions input:checked').map(input => input.value);
+      const gift = makeLivingGift({ title: q('#gift-title').value, kind: q('#gift-kind').value,
+        attribution: q('#gift-credit').value, note: q('#gift-note').value,
+        rightsRef: q('#gift-rights').value, permissions });
+      state.livingGifts = state.livingGifts || { items: [] };
+      if (state.livingGifts.items.length >= 100) throw new Error('Local shelf full; review and archive separately.');
+      state.livingGifts.items.push(gift);
+      for (const id of ['#gift-title','#gift-credit','#gift-note','#gift-rights']) q(id).value = '';
+      qa('#gift-permissions input:checked').forEach(input => { input.checked = false; });
+      save(); renderLivingGifts();
+    } catch (e) { alert(e.message); }
+  });
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-gift-attach],[data-gift-review],[data-gift-draft],[data-gift-withdraw]');
+    if (!button) return;
+    const id = button.dataset.giftAttach || button.dataset.giftDraft || button.dataset.giftWithdraw || button.dataset.id;
+    const gift = state.livingGifts.items.find(g => g.id === id);
+    if (!gift) return;
+    try {
+      if (button.dataset.giftAttach) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = GIFT_MIMES[gift.kind].join(',');
+        input.onchange = async () => {
+          try {
+            const file = input.files?.[0]; if (!file) return;
+            if (file.size > MAX_GIFT_FILE) throw new Error('File exceeds 50 MB local ceiling');
+            const sha256 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer())),
+              b => b.toString(16).padStart(2, '0')).join('');
+            bindLivingGiftAsset(gift, sha256, file.type, file.size);
+            if (localGiftMedia.has(gift.id)) URL.revokeObjectURL(localGiftMedia.get(gift.id));
+            localGiftMedia.set(gift.id, URL.createObjectURL(file));
+            save(); renderLivingGifts();
+          } catch (e) { alert(e.message); }
+        };
+        input.click(); return;
+      }
+      if (button.dataset.giftReview) {
+        const use = button.dataset.giftReview;
+        const disposition = prompt('Local editorial review for ' + use + ': hold / refuse / admit', 'hold');
+        if (!disposition) return;
+        const evidence = disposition === 'admit' ? prompt('Reference for CURRENT, human-verified permission (no personal details):') : '';
+        if (disposition === 'admit' && !evidence) return;
+        reviewLivingGift(gift, use, disposition, state.settings.operator, evidence || '');
+      }
+      if (button.dataset.giftDraft) {
+        state.cards.push(draftFromLivingGift(gift, state.settings.operator));
+      }
+      if (button.dataset.giftWithdraw) {
+        if (!confirm('Restrict all future use of this Living Gift? Previously aired/public copies need separate manual remediation.')) return;
+        withdrawLivingGift(gift, state.settings.operator, 'Owner / operator restriction');
+        holdUnbroadcastLivingGiftCards(state.cards, gift.id);
+        if (localGiftMedia.has(gift.id)) URL.revokeObjectURL(localGiftMedia.get(gift.id));
+        localGiftMedia.delete(gift.id);
+      }
+      save(); render();
+    } catch (e) { alert(e.message); }
+  });
 
   const localMedia = new Map();
   function renderTrack() {
