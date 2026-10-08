@@ -55,6 +55,11 @@ test('human-reviewed handoff composes with KINSHIP-001 but never claims on-air s
   assert.deepEqual(pack.airableSegmentIds,[]);
   assert.equal(pack.boundaries.broadcast,false);assert.equal(pack.boundaries.prayerRequestIngest,false);
   assert.equal(pack.routing.officialGivingUnchanged,true);assert.equal(pack.routing.actionRouteProven,false);
+  assert.equal(pack.bridgeReceiptId, 'sha256:' + hash({
+    radioPackReceiptId: pack.receiptId, treasuryProvenance: pack.treasuryProvenance, routing: pack.routing
+  }));
+  const changed = structuredClone(pack.treasuryProvenance); changed.sha256 = '0'.repeat(64);
+  assert.notEqual(pack.bridgeReceiptId, 'sha256:' + hash({radioPackReceiptId:pack.receiptId,treasuryProvenance:changed,routing:pack.routing}));
 });
 test('ready means eligible for human producer consideration only', () => {
   const pack=makeReviewedRadioPack([origin()],review({disposition:'ready'}),edition);
