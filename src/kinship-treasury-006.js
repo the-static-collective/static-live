@@ -106,13 +106,13 @@ export function makeReviewedRadioPack(bundle, review, edition) {
   check(only(edition, ['id','localDate','intendedUse']), 'bounded edition required');
   const items = porch.resourcePossibilities.map(v => v.quantity + ' ' + v.unit.replaceAll('_',' ') + ' of ' + v.resource.replaceAll('_',' ')).join('; ');
   const candidate = {
-    id: 'treasury-neighbor-door-' + porch.source.headHash.slice(0,16),
+    id: 'treasury-neighbor-door-' + porch.source.sha256.slice(0,16),
     kind: 'community-door',
     title: 'Possible neighbor-help invitation',
     claimMode: 'derived',
     copy: 'PRODUCER LEAD ONLY. Public-key signed, self-attested request for: ' + items +
       '. Need identity, consent, location, current status, safe response route and editorial suitability independently verified before air. No payment destination or private listener details were imported. Human producer decides whether and how to speak.',
-    sourceRefs: [{ ref: 'urn:sha256:' + porch.source.headHash,
+    sourceRefs: [{ ref: 'urn:sha256:' + porch.source.sha256,
       label: 'Jubilee Treasury signed public need revision ' + porch.source.revision + ' (signer not identity verified)',
       authority: 'collective-receipt' }],
     review: { disposition: review.disposition, reviewedBy: review.reviewedBy,
