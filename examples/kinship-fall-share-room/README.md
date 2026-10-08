@@ -382,3 +382,12 @@ Run `npm test` from the repository root. Focused campaign tests verify that
 unwitnessed plans cannot support learning, revisions carry no programming
 authority, different bytes cannot inherit first responses, media admission is
 bounded, shift receipt has no effect, and the handoff embeds the current source.
+
+
+## KINSHIP-007 — Living Gifts (operator-local specimen)
+
+Supporters may freely offer words, photos, voice, or video **without a donation, CRM lookup, payment proof or real-name requirement**. The new Living Gifts shelf records bounded contributor-chosen attribution, permission evidence reference and separate *offered* uses (quotation, broadcast consideration, gallery consideration, archival consideration). **No use is offered by default.** A human operator must review one exact scope and relevant release before preparing a derivative broadcast card or displaying a local gallery preview. Even then, no Kinship adoption, publication, airtime, or independent release verification is claimed.
+
+Each image/audio/video needs exact SHA-256 byte binding; media bytes are retained only in ephemeral local browser object URLs, and must be reattached after reload or import. Handoff and import put previous editorial admission behind a fresh review boundary; all unbroadcast gift-derived cards are held. Withdrawal blocks new use and redacts locally unbroadcast card copy; already published material requires separate human action. Room exports include *text and metadata* and must be handled as sensitive even though raw media bytes are absent. The gallery is **local operator preview only** and never a public submission/gallery endpoint.
+
+Founding boundaries: `OFFER != CONSENT`; `DONATION != STORY`; `REVIEW != AIR`; `BROADCAST != GALLERY`; `WITHDRAWN != REUSABLE`. This experiment intentionally excludes child/third-party intake and secure remote storage, moderation, donor-data integration, and public distribution pending a Kinship-owned design and explicit station participation.
