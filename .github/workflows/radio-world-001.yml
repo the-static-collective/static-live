@@ -1,0 +1,51 @@
+name: RADIO WORLD 001 — two independent app doors
+on:
+  push:
+    branches:
+      - experiment/radio-world-001-two-doors
+  pull_request:
+    paths:
+      - src/radio-world-001.js
+      - src/radio-world-server.js
+      - src/radio-world-cli.js
+      - fixtures/radio-world-001/**
+      - examples/radio-world-001/**
+      - test/radio-world-001.test.js
+      - docs/RADIO-WORLD-001.md
+      - package.json
+      - .github/workflows/radio-world-001.yml
+permissions:
+  contents: read
+jobs:
+  offline-pwa-and-owner-rights:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: All inherited Static Live tests plus radio world hostile checks
+        run: npm test
+      - name: Read-only app server and link-only assertions
+        run: |
+          node --input-type=module - <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {createRadioWorldServer} from './src/radio-world-server.js';
+          const registry=JSON.parse(readFileSync('./fixtures/radio-world-001/worlds.json','utf8'));
+          const server=createRadioWorldServer({registry});
+          const host=await server.start();
+          try{
+            const response=await fetch(host.url+'api/worlds');
+            if(!response.ok)throw Error('NO_DIRECTORY');
+            const x=await response.json();
+            if(x.worlds.length!==2 || x.policy.owner_grants!=='NOT_OBTAINED' ||
+               x.policy.active_audio!=='NONE'||x.policy.third_party_proxy!==false ||
+               x.worlds.some(y=>y.verifiedDirectStream!==false||y.mediaPlayback!=='NONE') ||
+               x.actualRadioTransmission!==false || x.streamsCombined!==false)
+               throw Error('UNAUTHORIZED_STREAM_CLAIM');
+            console.log('RADIO WORLD 001 — two source owners, no false playback, no stream proxy');
+          }finally{await server.stop()}
+          JS

@@ -1,0 +1,68 @@
+{
+  "schema": "static-live.radio-world-registry/v0.1",
+  "title": "The Radio House — Two Doors",
+  "policy": {
+    "owner_grants": "NOT_OBTAINED",
+    "active_audio": "NONE",
+    "third_party_proxy": false,
+    "tracking": false,
+    "crossfade": false,
+    "recording": false,
+    "local_offline_cache": "FIRST_PARTY_SHELL_ONLY",
+    "automatic_playback": false
+  },
+  "worlds": [
+    {
+      "id": "kinship-radio",
+      "owner": {
+        "id": "kinship-radio",
+        "name": "Kinship Radio",
+        "authority": "INDEPENDENT_EXTERNAL_OWNER"
+      },
+      "place": {
+        "country": "US",
+        "label": "Mankato / Southern Minnesota"
+      },
+      "officialUrl": "https://kinshipradio.org/main/",
+      "description": "Christian radio, live station programming, and its independently managed listening app.",
+      "surfaces": {
+        "listen": "OFFICIAL_LINK_ONLY",
+        "produce": "EXTERNAL_OWNER",
+        "exchange": "REQUIRES_SEPARATE_INVITATION"
+      },
+      "connection": {
+        "mode": "OFFICIAL_SITE_HANDOFF",
+        "directAudioUrl": null,
+        "streamLicense": "NOT_ESTABLISHED",
+        "observedLive": "UNKNOWN",
+        "podcastFeed": "NOT_VERIFIED"
+      }
+    },
+    {
+      "id": "rock-impact",
+      "owner": {
+        "id": "rock-impact-makers",
+        "name": "Rock Impact Makers",
+        "authority": "INDEPENDENT_EXTERNAL_OWNER"
+      },
+      "place": {
+        "country": "NG",
+        "label": "Nigeria"
+      },
+      "officialUrl": "https://rockimpactmakersglobal.org/",
+      "description": "Worship, teaching, online services, and independently governed ministry media.",
+      "surfaces": {
+        "listen": "OFFICIAL_LINK_ONLY",
+        "produce": "EXTERNAL_OWNER",
+        "exchange": "REQUIRES_SEPARATE_INVITATION"
+      },
+      "connection": {
+        "mode": "OFFICIAL_SITE_HANDOFF",
+        "directAudioUrl": null,
+        "streamLicense": "NOT_ESTABLISHED",
+        "observedLive": "UNKNOWN",
+        "podcastFeed": "NOT_VERIFIED"
+      }
+    }
+  ]
+}

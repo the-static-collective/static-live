@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1518">
+<meta name="description" content="Radio World: two independently owned radio and ministry media worlds with one listener-controlled doorway.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="stylesheet" href="/styles.css">
+<title>Radio World · Static Live</title>
+</head><body>
+<a href="#world-content" class="skip">Skip to selected world</a>
+<div class="shell">
+<header class="mast">
+  <div class="brand"><div class="mark" aria-hidden="true">◉</div><div><div class="topline">STATIC LIVE / RADIO WORLD 001</div><strong>RADIO<span>WORLD</span></strong></div></div>
+  <div class="network"><span class="pulse" aria-hidden="true"></span><span id="network-label">Directory mode · no audio connected</span></div>
+</header>
+<section class="intro">
+  <div class="headline"><div class="eyebrow">THE RADIO HOUSE / TWO DOORS</div>
+  <h1>One doorway.<br><em>Different voices.</em></h1>
+  <p>Explore two independently owned listening worlds. Choose where to go. Each source retains its programs, audience, permissions and broadcast controls.</p>
+  </div>
+  <div class="dial" aria-hidden="true">
+    <div class="dial-ring"><div class="dial-inner"><span>01 — 11</span><strong>↔</strong><small>CHOOSE A WORLD</small></div></div>
+    <div class="dial-note">Selection ≠ streaming</div>
+  </div>
+</section>
+<section class="selection" aria-label="Select your radio world">
+  <div class="section-label"><span>01 / WORLD SELECTOR</span><span>USER CONTROLLED · NEVER AUTOPLAY</span></div>
+  <div id="world-list" class="world-grid" aria-live="polite">
+     <div class="world-placeholder">Reading the independently owned world directory…</div>
+  </div>
+</section>
+<section id="world-content" class="content-shell" tabindex="-1" aria-labelledby="world-heading">
+ <div class="section-label"><span>02 / SELECTED WORLD</span><span id="world-ownership">OWNER HELD</span></div>
+ <div class="world-detail">
+   <div class="selected-header">
+     <div><div id="world-tag" class="eyebrow">CHOOSE ABOVE</div><h2 id="world-heading">Your next station</h2><p id="world-description">Select an independent source to see available connections.</p></div>
+     <div id="world-status" class="chip">Unknown until checked at source</div>
+   </div>
+   <div class="tabbar" role="tablist" aria-label="World surfaces">
+     <button class="tab current" id="tab-listen" role="tab" aria-selected="true" data-view="listen">Listen</button>
+     <button class="tab" id="tab-produce" role="tab" aria-selected="false" data-view="produce">Make</button>
+     <button class="tab" id="tab-exchange" role="tab" aria-selected="false" data-view="exchange">Exchange</button>
+   </div>
+   <div id="tab-content" class="tab-panel" role="tabpanel" aria-live="polite">
+     <div class="hint">The source page remains the authoritative place to check whether a stream is live.</div>
+   </div>
+   <div class="world-footer"><span>INTERNAL AUDIO: <strong>OFF</strong></span><span>STREAM LICENSE: <strong>NOT ESTABLISHED</strong></span></div>
+ </div>
+</section>
+<section class="operating" aria-labelledby="bridge-title">
+  <div class="section-label"><span>03 / THE BRIDGE</span><span>PROPOSED · NOT ACTIVE</span></div>
+  <h2 id="bridge-title">Keep the rooms independent. <em>Connect the work.</em></h2>
+  <div class="bridge">
+    <div><div class="bridge-icon" aria-hidden="true">◉</div><strong>Static Live</strong><small>Owner-local OBS recording + podcast materials</small></div>
+    <div class="bridge-arrow" aria-hidden="true">→</div>
+    <div><div class="bridge-icon" aria-hidden="true">⌁</div><strong>reLATTE</strong><small>Permissioned proposals, admission and receipts</small></div>
+    <div class="bridge-arrow" aria-hidden="true">→</div>
+    <div><div class="bridge-icon" aria-hidden="true">⟡</div><strong>GHoT</strong><small>Voluntary spare compute, local media always first</small></div>
+  </div>
+</section>
+<footer><p><strong>RADIO WORLD 001 · LAB PREVIEW</strong> — This app does not restream, record, mix or track either organization. External listening happens on the owner's official site or app. No partnership or live availability is claimed.</p>
+<p id="notice" role="status" aria-live="polite">No listening session or station adoption has been observed.</p></footer>
+</div>
+<script type="module" src="/app.js"></script>
+</body></html>
