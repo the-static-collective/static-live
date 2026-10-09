@@ -1,0 +1,18 @@
+{
+  "name": "Radio World — The Radio House",
+  "short_name": "Radio World",
+  "description": "Independent source-first listening doors.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1518",
+  "theme_color": "#0b1518",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
