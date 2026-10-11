@@ -1,0 +1,90 @@
+{
+  "schema": "static-live.fragment-choir-input/v0.1",
+  "performance": {
+    "id": "pastor-funk-specimen-001",
+    "title": "The Pastor of Funk — Fragment Choir",
+    "host": "human:specimen-pastor"
+  },
+  "fragments": [
+    {
+      "id": "doorframe",
+      "kind": "object",
+      "material": "A doorframe with a blue crack through its paint",
+      "source": {
+        "mode": "imagined",
+        "description": "Fictional rainbow-elf offering in the Pastor of Funk lyrics"
+      },
+      "credit": {
+        "mode": "named",
+        "name": "Rainbow Elf One (fictional)"
+      },
+      "permission": {
+        "perform": true,
+        "transform": true,
+        "preserve": true
+      },
+      "review": {
+        "decision": "admit",
+        "by": "human:specimen-pastor"
+      }
+    },
+    {
+      "id": "button",
+      "kind": "object",
+      "material": "One brass button",
+      "source": {
+        "mode": "imagined",
+        "description": "Fictional rainbow-elf offering in the Pastor of Funk lyrics"
+      },
+      "credit": {
+        "mode": "named",
+        "name": "Rainbow Elf Two (fictional)"
+      },
+      "permission": {
+        "perform": true,
+        "transform": false,
+        "preserve": true
+      },
+      "review": {
+        "decision": "admit",
+        "by": "human:specimen-pastor"
+      }
+    },
+    {
+      "id": "private",
+      "kind": "word",
+      "material": "A phrase still awaiting its author’s permission",
+      "source": {
+        "mode": "imagined",
+        "description": "Synthetic private-side example"
+      },
+      "credit": {
+        "mode": "anonymous",
+        "name": null
+      },
+      "permission": {
+        "perform": false,
+        "transform": false,
+        "preserve": false
+      },
+      "review": {
+        "decision": "hold",
+        "by": "human:specimen-pastor"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "id": "cue-1",
+      "fragmentId": "doorframe",
+      "action": "fracture",
+      "instruction": "Keep the crack visible, never repair it for the audience"
+    },
+    {
+      "id": "cue-2",
+      "fragmentId": "button",
+      "action": "present",
+      "instruction": "Let the button appear unchanged"
+    }
+  ]
+}
