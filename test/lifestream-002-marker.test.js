@@ -26,6 +26,20 @@ test('marked observation persists without claiming media time or triggering OBS'
     assert.equal(lines[0].type,'recording-confirmed-observation');
     assert.equal(lines[1].markId,marker.markId);
     assert.equal(lines[1].sessionId,lines[0].sessionId);
+    const first=book.attend({markId:marker.markId,dimensions:['curiouser','joyful'],explicitNone:false,expectedPreviousId:null});
+    assert.deepEqual(first.dimensions,['joyful','curiouser']);
+    assert.equal(first.previousId,null);
+    const second=book.attend({markId:marker.markId,dimensions:[],explicitNone:true,expectedPreviousId:first.id});
+    assert.equal(second.previousId,first.id);
+    assert.equal(second.explicitNone,true);
+    assert.throws(()=>book.attend({markId:marker.markId,dimensions:['joyful'],expectedPreviousId:first.id}),/stale/);
+    assert.throws(()=>book.attend({markId:marker.markId,dimensions:['joyful','joyful'],expectedPreviousId:second.id}),/distinct/);
+    assert.throws(()=>book.attend({markId:'00000000-0000-4000-8000-000000000000',dimensions:[],expectedPreviousId:null}),/requires a mark/);
+    const revisions=readFileSync(file,'utf8').trim().split('\n').map(JSON.parse);
+    assert.equal(revisions.length,4);
+    assert.equal(revisions[2].type,'human-attention-declaration');
+    assert.equal(revisions[3].markId,marker.markId);
+    assert.match(revisions[3].basis,/not verified OBS media offset/);
   } finally {rmSync(root,{recursive:true,force:true});}
 });
 test('journal is opt in; malformed CLI and missing private path refuse',()=>{

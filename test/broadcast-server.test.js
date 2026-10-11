@@ -94,3 +94,36 @@ test('HOUSE identity exposes only a descriptive local console contract', async (
     assert.equal((await statusResponse.json()).event.id, 'impact-makers-demo');
   });
 });
+
+test('human attention routes only to a selected private mark, not OBS', async () => {
+  const calls=[];
+  const markId='00000000-0000-4000-8000-000000000001';
+  const markerBook={
+    attend(payload){calls.push(['attend',payload]);return {id:'00000000-0000-4000-8000-000000000002',...payload};}
+  };
+  const server=createBroadcastServer({controller:fakeController(calls),plan,markerBook,port:0});
+  const address=await server.start();
+  try{
+    const html=await (await fetch(address.url)).text();
+    assert.match(html,/data-value="joyful"/);
+    assert.match(html,/data-value="curiouser"/);
+    const payload={markId,dimensions:['joyful','curiouser'],explicitNone:false,expectedPreviousId:null};
+    const saved=await fetch(address.url+'/api/moment/attention',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    assert.equal(saved.status,200);
+    assert.deepEqual((await saved.json()).declaration.dimensions,['joyful','curiouser']);
+    assert.deepEqual(calls,[['attend',payload]]);
+    const refused=await fetch(address.url+'/api/moment/attention',{
+      method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    assert.equal(refused.status,403);
+    const wrongOrigin=await fetch(address.url+'/api/moment/attention',{
+      method:'POST',headers:{'Content-Type':'application/json',Origin:'https://unrelated.example'},
+      body:JSON.stringify(payload)});
+    assert.equal(wrongOrigin.status,403);
+    const unknown=await fetch(address.url+'/api/moment/attention',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...payload,extra:'not allowed'})});
+    assert.equal(unknown.status,422);
+    assert.deepEqual(calls,[['attend',payload]]);
+  }finally{await server.stop();}
+});
