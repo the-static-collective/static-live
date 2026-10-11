@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Pastor of Funk · Fragment Choir 001</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#f6f0d6;background:#121821;font-size:16px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% -10%,#44366b 0,transparent 45%),radial-gradient(ellipse at 100% 30%,#17574f 0,transparent 45%),#121821;min-height:100vh}
+main{max-width:1160px;margin:auto;padding:32px 18px 72px}
+h1{font-size:clamp(2.4rem,7vw,5.8rem);line-height:.94;letter-spacing:-.055em;max-width:760px;margin:22px 0;color:#fff0a8;text-wrap:balance}
+h2{font-size:1.35rem;margin:0 0 12px}p{line-height:1.5}.kicker{color:#f6b8e4;text-transform:uppercase;letter-spacing:.19em;font-size:.76rem;font-weight:800}
+.deck{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:26px}
+.panel{border:1px solid #ffffff35;border-radius:24px;padding:22px;background:#10141dcc;box-shadow:0 18px 45px #0004;min-width:0}
+.panel.wide{grid-column:1/-1}.muted{color:#c4c9d3;font-size:.91rem}
+label{display:block;font-size:.82rem;font-weight:750;margin:12px 0 6px;color:#e2e8e9}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #8894a255;background:#1c2833;color:#fff;font:inherit}
+textarea{min-height:86px;resize:vertical}input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid #ffd86f;outline-offset:3px}
+button{background:#d9fd7c;color:#1a2a1a;border:0;border-radius:999px;padding:10px 17px;font-weight:800;cursor:pointer}
+button.secondary{background:#303c4a;color:white;border:1px solid #ffffff45}button.danger{background:#55333d;color:#ffe8ee}button:disabled{opacity:.45;cursor:not-allowed}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.checks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:16px 0}
+.checks label{display:flex;align-items:center;gap:8px;margin:0;font-weight:500;font-size:.77rem;line-height:1.25}
+.checks input{width:auto;accent-color:#b9f077}
+.card{border-radius:14px;background:#1e2932;border:1px solid #ffffff23;margin:12px 0;padding:14px;overflow-wrap:anywhere}
+.card p{margin:7px 0}.tag{display:inline-block;border:1px solid #ffffff4c;border-radius:99px;padding:3px 8px;font-size:.7rem;color:#e4e5da;margin:0 5px 5px 0}
+.card blockquote{border-left:3px solid #fbd67c;margin:10px 0;padding:5px 0 5px 13px;white-space:pre-wrap}
+.funky{background:linear-gradient(100deg,#f8dc7d,#f0a1dc,#93dccb);background-clip:text;color:transparent}
+.stage{min-height:185px;border:1px dashed #a4c4b0;border-radius:16px;background:repeating-linear-gradient(135deg,#172d2c,#172d2c 16px,#213735 16px,#213735 32px);padding:16px}
+.stage .card{background:#111c26ee;border-left:5px solid #dcff84;animation:arrive .24s ease-out}
+@keyframes arrive{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.stage strong{color:#e7ef9c}
+footer{margin-top:24px;border-top:1px solid #ffffff35;padding-top:20px;color:#c4ced3;font-size:.86rem}
+.notice{padding:10px 14px;background:#343042;border-radius:12px;color:#ffeabd;margin:14px 0}
+@media(max-width:720px){.deck{grid-template-columns:1fr}.checks{grid-template-columns:1fr}.panel{padding:16px}main{padding:20px 12px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<div class="kicker">STATIC LIVE / LOCAL EXPERIMENT / 001</div>
+<h1>THE PASTOR<br>OF <span class="funky">FUNK</span></h1>
+<p style="max-width:730px">The rainbow elves bring pieces of reality. The host chooses the pieces, and the room makes a new groove. <strong>Bring the fracture. Keep the credit.</strong></p>
+<div class="notice">Offline rehearsal only. No microphones, uploads, live audio mixing, OBS commands, automatic publication, or verified contributor identity. Nothing is sent anywhere.</div>
+<div class="deck">
+<section class="panel" aria-labelledby="bring">
+<h2 id="bring">01 / Bring a fragment</h2>
+<p class="muted">A sound described in words, an object, a sentence, a gesture, an imaginary piece of a world.</p>
+<form id="offer">
+<label for="kind">Fragment kind</label><select id="kind"><option value="word">Words</option><option value="sound">Sound description</option><option value="object">Object</option><option value="gesture">Gesture</option><option value="image-description">Image description</option></select>
+<label for="material">The peculiar piece</label><textarea id="material" maxlength="2000" required placeholder="A blue button from a coat nobody remembers..."></textarea>
+<label for="origin">Source posture</label><select id="origin"><option value="witnessed">Personally witnessed</option><option value="imagined">Imagined / fictional</option><option value="found">Found / source uncertain</option></select>
+<label for="source">Where it came from (self-reported)</label><input id="source" maxlength="240" required placeholder="My grandfather's coat, according to me">
+<label for="credit">Credit name (blank = anonymous)</label><input id="credit" maxlength="100" placeholder="Rainbow Elf #1">
+<div class="checks">
+<label><input id="perform" type="checkbox">May perform</label>
+<label><input id="transform" type="checkbox">May remix</label>
+<label><input id="preserve" type="checkbox">May preserve in exported score</label>
+</div>
+<p class="muted">Permissions here are entered by the person operating this browser; they are not authenticated signatures. Ask each contributor directly.</p>
+<button type="submit">Place on the porch</button>
+</form>
+</section>
+<section class="panel" aria-labelledby="porch-title">
+<h2 id="porch-title">02 / The porch</h2>
+<p class="muted">Offered is not admitted. The host must make each choice. Held/refused material stays out of the exported score.</p>
+<div id="porch" aria-live="polite"><p class="muted">No fragments yet.</p></div>
+</section>
+<section class="panel" aria-labelledby="console-title">
+<h2 id="console-title">03 / Pastor's console</h2>
+<p class="muted">Choose an admitted fragment and a treatment. No automatic selection; no synthetic contributor claims.</p>
+<label for="selected">Admitted fragment</label><select id="selected"><option value="">Nothing admitted</option></select>
+<label for="action">Treatment</label><select id="action"><option value="present">Present unchanged</option><option value="loop">Loop</option><option value="echo">Echo</option><option value="braid">Braid with the room</option><option value="fracture">Keep the fracture</option></select>
+<label for="instruction">Host's cue (not a generated fact)</label><input id="instruction" maxlength="240" value="Bring this forward when the groove rises">
+<div class="controls"><button id="cue-add" type="button">Add to score</button><button id="undo" type="button" class="secondary">Undo last cue</button></div>
+<p id="feedback" role="status" class="muted"></p>
+</section>
+<section class="panel" aria-labelledby="stage-title">
+<h2 id="stage-title">04 / The stage score</h2>
+<p class="muted">A visual rehearsal of stage directions, not actual sound or a witnessed performance.</p>
+<div id="stage" class="stage" aria-live="polite"><p>No cues yet. The room is listening.</p></div>
+<div class="controls"><button id="export" type="button">Export reviewed proposal</button></div>
+<p class="muted">The export includes only admitted fragments used in cues. It must be compiled and independently reviewed before anyone treats it as a show plan.</p>
+</section>
+</div>
+<footer>FRAGMENT ≠ CONSENT · OFFER ≠ ADMISSION · SCORE ≠ PERFORMANCE · REMIX ≠ OWNERSHIP · EXPORT ≠ PUBLICATION<br>One browser, one local host. No server state and no persistence. Closing the page loses this rehearsal unless you export.</footer>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const fragments = [];
+const cues = [];
+const SCHEMA = 'static-live.fragment-choir-input/v0.1';
+let nextFragment = 1;
+let nextCue = 1;
+const elem = (tag, cls, txt) => { const e=document.createElement(tag); if(cls)e.className=cls; if(txt!==undefined)e.textContent=txt; return e; };
+const message = text => { $('feedback').textContent=text; };
+function actionButton(label, onClick, cls='secondary'){
+  const b=elem('button',cls,label); b.type='button'; b.addEventListener('click',onClick); return b;
+}
+function addOffer(event){
+  event.preventDefault();
+  const material=$('material').value.trim();
+  const source=$('source').value.trim();
+  if(!material||!source){message('Fragment and origin description are required.');return;}
+  const name=$('credit').value.trim();
+  fragments.push({
+    id:'fragment-'+String(nextFragment++).padStart(3,'0'),kind:$('kind').value,material,
+    source:{mode:$('origin').value,description:source},
+    credit:{mode:name?'named':'anonymous',name:name||null},
+    permission:{perform:$('perform').checked,transform:$('transform').checked,preserve:$('preserve').checked},
+    review:{decision:'hold',by:'host:local'}
+  });
+  $('offer').reset(); render(); message('Fragment arrived on the porch; no stage admission yet.');
+}
+function decide(fragment,decision){
+  fragment.review.decision=decision;
+  if(decision!=='admit'){
+    for(let i=cues.length-1;i>=0;i--)if(cues[i].fragmentId===fragment.id)cues.splice(i,1);
+  }
+  render(); message('Host set '+fragment.id+' to '+decision+'.');
+}
+function render(){
+  const porch=$('porch');porch.replaceChildren();
+  if(!fragments.length)porch.append(elem('p','muted','No fragments yet.'));
+  for(const f of fragments){
+    const card=elem('article','card');
+    card.append(elem('span','tag',f.id+' · '+f.kind),elem('span','tag',f.review.decision),elem('span','tag',f.source.mode));
+    card.append(elem('blockquote','',f.material));
+    card.append(elem('p','muted',f.credit.name||'Anonymous contributor'));
+    const perms=Object.entries(f.permission).filter(([,v])=>v).map(([k])=>k).join(', ')||'none';
+    card.append(elem('p','muted','Declared permission: '+perms));
+    const buttons=elem('div','controls');
+    buttons.append(actionButton('Admit',()=>decide(f,'admit')),actionButton('Hold',()=>decide(f,'hold')),actionButton('Refuse',()=>decide(f,'refuse'),'danger'));
+    card.append(buttons);porch.append(card);
+  }
+  const selected=$('selected'); const old=selected.value;selected.replaceChildren();
+  selected.append(new Option('Choose admitted piece',''));
+  for(const f of fragments.filter(f=>f.review.decision==='admit')) selected.append(new Option(f.id+' · '+f.material.slice(0,52),f.id));
+  if([...selected.options].some(o=>o.value===old))selected.value=old;
+  const stage=$('stage');stage.replaceChildren();
+  if(!cues.length)stage.append(elem('p','muted','No cues yet. The room is listening.'));
+  for(const [index,cue] of cues.entries()){
+    const f=fragments.find(x=>x.id===cue.fragmentId);
+    const card=elem('article','card');
+    card.append(elem('strong','',String(index+1).padStart(2,'0')+' / '+cue.action.toUpperCase()));
+    card.append(elem('blockquote','',f.material));
+    card.append(elem('p','',cue.instruction));
+    card.append(elem('p','muted','From '+(f.credit.name||'anonymous')+' · '+f.id+' · '+f.source.mode));
+    stage.append(card);
+  }
+}
+function addCue(){
+  const id=$('selected').value;
+  const f=fragments.find(x=>x.id===id);
+  const action=$('action').value;
+  const instruction=$('instruction').value.trim();
+  if(!f){message('Choose a fragment the host admitted.');return;}
+  if(!instruction){message('A cue instruction is required.');return;}
+  if(!f.permission.perform||!f.permission.preserve){message('This stage export requires explicit performance and preservation permission.');return;}
+  if(action!=='present'&&!f.permission.transform){message('A remix treatment requires explicit transform permission.');return;}
+  cues.push({id:'cue-'+String(nextCue++).padStart(3,'0'),fragmentId:id,action,instruction});
+  render();message('Cue added. This is a proposal, not a performance.');
+}
+function exportScore(){
+  if(!cues.length){message('Add a reviewed cue before exporting.');return;}
+  const ids=new Set(cues.map(x=>x.fragmentId));
+  const used=fragments.filter(f=>ids.has(f.id) && f.review.decision==='admit' && f.permission.perform && f.permission.preserve);
+  if(used.length!==ids.size){message('Stage state changed. Review and rebuild the score.');return;}
+  for(const cue of cues)if(cue.action!=='present'&&!used.find(f=>f.id===cue.fragmentId).permission.transform){message('Transform consent missing.');return;}
+  const packet={schema:SCHEMA,performance:{id:'pastor-funk-local-001',title:'The Pastor of Funk — Fragment Choir',host:'host:local'},fragments:used,cues:[...cues]};
+  const blob=new Blob([JSON.stringify(packet,null,2)+'\n'],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const link=document.createElement('a');
+  link.href=url;link.download='fragment-choir-proposal.json';document.body.append(link);link.click();link.remove();URL.revokeObjectURL(url);
+  message('Reviewed proposal downloaded locally. Not a verified or performed score.');
+}
+$('offer').addEventListener('submit',addOffer);
+$('cue-add').addEventListener('click',addCue);
+$('undo').addEventListener('click',()=>{cues.pop();render();message('Last cue removed locally.');});
+$('export').addEventListener('click',exportScore);
+render();
+</script>
+</body>
+</html>
