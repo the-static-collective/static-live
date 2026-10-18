@@ -134,6 +134,11 @@ export function createCommonsMirror({ tenant, dataDir, trustedPublicKeyPem }) {
       if (req.method === 'GET' && path === '/health')
         return respond(res, 200, { role: 'read-only-public-mirror', tenant, ready: !!current,
           edition: current?.edition ?? null, sha256: current?.sha256 ?? null });
+      // Public-only signed projection: allows an independent reader to validate the
+      // exact owner-approved edition without inheriting private journal authority.
+      if (req.method === 'GET' && path === '/public-snapshot')
+        return respond(res, current ? 200 : 503,
+          current ? current.envelope : { error: 'No verified snapshot' });
       if (req.method === 'GET' && path === '/api/' + tenant + '/songs')
         return respond(res, current ? 200 : 503,
           current ? { songs: current.songs, edition: current.edition } : { error: 'No verified snapshot' });
