@@ -104,7 +104,7 @@ export function publishSong(tenant, state, input, at = new Date().toISOString())
   const song = {
     id: randomUUID(), tenant, sourceSeedIds: seedIds, title, lyrics,
     scriptureRef: input.scriptureRef ? requireText(input.scriptureRef, 'Scripture', 120) : '',
-    bpm, meter, requiredCapabilities, stems, cues, landmarks: ['intro', 'verse', 'chorus', 'outro'],
+    bpm, meter: input.meter, requiredCapabilities, stems, cues, landmarks: ['intro', 'verse', 'chorus', 'outro'],
     rightsReview: { affirmed: true, note: rightsNote },
     pastoralReview: { affirmed: true, note: approvalNote },
     status: 'PUBLISHED'
