@@ -1,0 +1,21 @@
+name: Living Hymnal Lab
+on:
+  pull_request:
+    paths:
+      - 'labs/living-hymnal-001/**'
+      - '.github/workflows/living-hymnal-lab.yml'
+  workflow_dispatch:
+jobs:
+  lab-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Living Hymnal and Static Live compatibility
+        run: node --test labs/living-hymnal-001/test/*.test.mjs
+      - name: Test existing Static Live suite
+        run: npm test
