@@ -95,6 +95,35 @@ async function loadReview() {
         }
         card.append(buttons);
       }
+      if (seed.status === 'ADMIT' && !seed.releasePermission) {
+        const permission = node('form', 'permission-form');
+        const note = node('p', 'fineprint',
+          'Record the reference to an independently obtained contributor permission. The original submission authorizes private review only.');
+        const reference = node('input');
+        reference.required = true; reference.minLength = 8; reference.maxLength = 300;
+        reference.placeholder = 'Consent form or signed release record reference';
+        const scope = node('select');
+        for (const [value, label] of [
+          ['PUBLIC_LYRICS', 'Public in this church only'],
+          ['PUBLIC_LYRICS_AND_INTERCHURCH', 'Also share lyrics with other churches']]) {
+          const option = node('option', '', label); option.value = value; scope.append(option);
+        }
+        const button = node('button', 'secondary', 'Record contributor permission');
+        button.type = 'submit';
+        permission.append(note, reference, scope, button);
+        permission.addEventListener('submit', async event => {
+          event.preventDefault(); button.disabled = true;
+          try {
+            await request('admin/permission', { method: 'POST', headers: credential(),
+              body: JSON.stringify({ seedId: seed.id, scope: scope.value, recordRef: reference.value }) });
+            await loadReview();
+          } catch (error) { alert(error.message); button.disabled = false; }
+        });
+        card.append(permission);
+      }
+      if (seed.releasePermission) card.append(node('p', 'small',
+        'Permission recorded: ' + seed.releasePermission.scope +
+        ' · ' + seed.releasePermission.recordRef));
       host.append(card);
     }
     const exports = $('#stage-exports');
@@ -102,7 +131,7 @@ async function loadReview() {
     for (const song of data.songs) {
       const row = node('div', 'export-row');
       row.append(node('span', '', song.title));
-      for (const [type, label] of [['stage', 'Stage packet'], ['relatte', 'reLATTE spec']]) {
+      for (const [type, label] of [['stage', 'Stage packet'], ['bundle', 'Portable lyric bundle']]) {
         const b = node('button', 'secondary', label);
         b.type = 'button'; b.addEventListener('click', async () => {
           try {
@@ -134,6 +163,7 @@ $('#publish-form').addEventListener('submit', async e => {
     payload.bpm = Number(payload.bpm);
     payload.rightsCleared = f.has('rightsCleared');
     payload.pastoralApproved = f.has('pastoralApproved');
+    payload.interchurchSharingApproved = f.has('interchurchSharingApproved');
     const result = await request('admin/publish', { method: 'POST', headers: credential(),
       body: JSON.stringify(payload) });
     status.textContent = 'Published locally: ' + result.songId;
