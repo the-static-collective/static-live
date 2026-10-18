@@ -3,8 +3,8 @@ import { readFileSync, mkdirSync, appendFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { timingSafeEqual } from 'node:crypto';
-import { assertTenant, createSeed, replay, decideSeed, publishSong,
-  toStaticLivePacket, toRelatteOpaqueSpec, hostManifest } from './core.mjs';
+import { assertTenant, createSeed, replay, decideSeed, recordSeedPermission, publishSong,
+  toStaticLivePacket, toRelatteOpaqueSpec, toRelatteExportBundle, hostManifest } from './core.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(here, '..', 'public');
@@ -108,15 +108,20 @@ export function createApp({ dataDir, tenants, adminTokens = {}, allowSubmissions
         const event = decideSeed(tenant, state(tenant), input.seedId, input.decision);
         append(tenant, event); return send(res, 200, { status: event.decision });
       }
+      if (req.method === 'POST' && action === 'admin/permission') {
+        const input = await bodyJson(req);
+        const event = recordSeedPermission(tenant, state(tenant), input.seedId, input.scope, input.recordRef);
+        append(tenant, event); return send(res, 200, { status: 'PERMISSION_RECORDED', scope: event.scope });
+      }
       if (req.method === 'POST' && action === 'admin/publish') {
         const event = publishSong(tenant, state(tenant), await bodyJson(req));
         append(tenant, event); return send(res, 201, { songId: event.song.id, status: 'PUBLISHED' });
       }
-      const exported = /^admin\/(stage|relatte)\/([a-f0-9-]+)$/.exec(action);
+      const exported = /^admin\/(stage|relatte|bundle)\/([a-f0-9-]+)$/.exec(action);
       if (req.method === 'GET' && exported) {
         const song = state(tenant).songs.find(x => x.id === exported[2]);
         if (!song) return send(res, 404, { error: 'Unreleased song' });
-        return send(res, 200, exported[1] === 'stage' ? toStaticLivePacket(song) : toRelatteOpaqueSpec(song));
+        return send(res, 200, exported[1] === 'stage' ? toStaticLivePacket(song) : exported[1] === 'relatte' ? toRelatteOpaqueSpec(song) : toRelatteExportBundle(song));
       }
       return send(res, 404, { error: 'Unknown action' });
     } catch (error) {
