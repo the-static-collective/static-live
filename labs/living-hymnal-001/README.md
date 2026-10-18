@@ -112,3 +112,20 @@ No raw seed text, alias, permission record identifier, backing stem, audio, or p
 The separate [reLATTE Living Hymnal 002 draft](https://github.com/the-static-collective/reLATTE/pull/117) validates such bundles, signs an actual reLATTE crossing, sends it through a file-transport witness, and tests two independent local church decisions with restart replay. The adapter lives outside reLATTE core, so ordinary reLATTE transport and receivers remain unaware of worship semantics.
 
 **Still not production-ready:** authorship/license assertions are not independently verified, contributors cannot yet withdraw permission through the UI, and there is no production identity, key custody, storage, delivery or data-deletion machinery. Do not expose real congregational intake or present this as the church's own app without church leadership approval.
+
+## Extension 003: local Suno/stage WAV preflight
+
+Static Live's normal compiler still creates `projection.json`. The new **local-only WAV preflight** reads the files named by that projection from a supplied asset directory, verifies file presence, RIFF/WAV headers, channels, bit depth, sample rates and approximate start-to-end length alignment. It distinguishes front-of-house stems from private click/cue inputs. It does not upload files or play/mix audio.
+
+Example (using a real compiled Static Live projection and human-prepared/downloaded WAV files):
+
+```sh
+# from static-live repository root
+node labs/living-hymnal-001/src/stage-ready.mjs build/sc2/projection.json /path/to/authorized-wav-assets
+```
+
+Or from the lab directory: `npm run preflight -- <projection.json> <wav-asset-root>`.
+
+Outputs a machine-readable report with `ready`, `files`, `errors`, and `warnings`. Exit status 1 means the named audio is not ready for rehearsal playback. Check for sample-rate and duration mismatches before copying tracks onto the church's stage computer. **A green report is not a substitute for a live soundcheck or verification that audio can legally be used or streamed.** It does not produce click tracks, stems, multitracks or a mixing-console configuration; those remain human-prepared artifacts.
+
+Test coverage includes aligned WAV and private click, missing files, mismatched sample rates and durations, duplicate paths, directory traversal, and unresolved stage capabilities. All checks run on synthetic recordings.
