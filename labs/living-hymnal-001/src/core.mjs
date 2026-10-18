@@ -65,6 +65,13 @@ export function replay(events, tenant) {
         seeds.get(id)?.releasePermission?.scope === 'PUBLIC_LYRICS_AND_INTERCHURCH'))
         throw new Error('Source lacks permission for interchurch sharing');
       songs.set(event.song.id, { ...event.song, publishedAt: event.at });
+    } else if (event.type === 'song.withdrawn') {
+      const song = songs.get(event.songId);
+      if (!song || song.status !== 'PUBLISHED' ||
+          typeof event.reason !== 'string' || !event.reason.trim())
+        throw new Error('Invalid publication withdrawal history');
+      songs.set(event.songId, { ...song, status: 'WITHDRAWN',
+        withdrawnAt: event.at, withdrawalReason: event.reason });
     } else throw new Error('Unknown event type');
   }
   return { seeds: [...seeds.values()], songs: [...songs.values()] };
@@ -147,6 +154,15 @@ export function publishSong(tenant, state, input, at = new Date().toISOString())
     status: 'PUBLISHED'
   };
   return { type: 'song.published', id: randomUUID(), tenant, at, song };
+}
+// Only the originating tenant's authorized reviewer path may append this event.
+// An old published event remains as history, but public and stage projections stop.
+export function withdrawSong(tenant, state, songId, reason, at = new Date().toISOString()) {
+  assertTenant(tenant);
+  const song = state.songs.find(s => s.id === songId && s.tenant === tenant);
+  if (!song || song.status !== 'PUBLISHED') throw new Error('Song not actively published');
+  return { type: 'song.withdrawn', id: randomUUID(), tenant, songId,
+    reason: requireText(reason, 'Withdrawal reason', 500, 8), at };
 }
 export function toStaticLivePacket(song) {
   if (song.status !== 'PUBLISHED' || !song.rightsReview?.affirmed || !song.pastoralReview?.affirmed)

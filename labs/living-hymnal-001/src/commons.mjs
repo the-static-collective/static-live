@@ -38,7 +38,8 @@ export function signPublicJournal({ tenant, journalPath, edition, privateKeyPem 
     ? readFileSync(journalPath, 'utf8').split('\n').filter(Boolean).map(JSON.parse) : [];
   const state = replay(events, tenant);
   const songs = state.songs
-    .filter(song => song.sharingApproval?.affirmed === true &&
+    .filter(song => song.status === 'PUBLISHED' &&
+      song.sharingApproval?.affirmed === true &&
       song.sharingApproval?.scope === 'PUBLIC_LYRICS_ONLY')
     .map(toRelattePublicProjection)
     .sort((a, b) => a.id.localeCompare(b.id));

@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { createApp } from '../src/server.mjs';
 import { createCommonsMirror } from '../src/commons.mjs';
+import { createLeasedMirror } from '../src/commons-lease.mjs';
 import { createCommonsGateway } from '../src/commons-gateway.mjs';
 
 const mode = process.argv[2];
@@ -15,12 +16,15 @@ const server = mode === 'owner'
     allowSubmissions: false })
   : mode === 'mirror'
     ? createCommonsMirror({ tenant, dataDir, trustedPublicKeyPem: trustedKey() })
-    : mode === 'gateway'
+    : mode === 'leased-mirror'
+      ? createLeasedMirror({ tenant, dataDir, trustedPublicKeyPem: trustedKey() })
+    : (mode === 'gateway' || mode === 'leased-gateway')
       ? createCommonsGateway({ tenant, receiptDir: dataDir,
+        requireLease: mode === 'leased-gateway',
         trustedPublicKeyPem: trustedKey(),
         mirrors: JSON.parse(process.env.COMMONS_MIRRORS_JSON || '[]') })
       : null;
-if (!server) throw new Error('Specify owner, mirror or gateway');
+if (!server) throw new Error('Specify owner, mirror, leased-mirror, gateway or leased-gateway');
 const port = process.env.COMMONS_PORT === undefined ? 0 : Number(process.env.COMMONS_PORT);
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid port');
 server.listen(port, '127.0.0.1', () => {

@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { join } from 'node:path';
 import { assertTenant } from './core.mjs';
 import { verifyPublicEnvelope } from './commons.mjs';
+import { verifyLeasedEdition } from './commons-lease.mjs';
 
 const MAX_ENVELOPE_BYTES = 520_000;
 function atomicJson(file, value) {
@@ -36,9 +37,9 @@ function validateHighWater(value) {
   return !!value && Number.isSafeInteger(value.edition) && value.edition >= 1 &&
     typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256);
 }
-async function fetchMirror(node, tenant, trustedKey, timeoutMs) {
+async function fetchMirror(node, tenant, trustedKey, timeoutMs, requireLease, clock) {
   // Probe only operator-declared, loopback-tunneled mirror endpoints.
-  const response = await fetch(node.url + '/public-snapshot', {
+  const response = await fetch(node.url + (requireLease ? '/public-bundle' : '/public-snapshot'), {
     method: 'GET', redirect: 'error', signal: AbortSignal.timeout(timeoutMs)
   });
   if (response.status !== 200) throw new Error('No public snapshot, HTTP ' + response.status);
@@ -46,16 +47,19 @@ async function fetchMirror(node, tenant, trustedKey, timeoutMs) {
   if (declared > MAX_ENVELOPE_BYTES) throw new Error('Oversized mirror snapshot');
   const raw = await response.text();
   if (Buffer.byteLength(raw) > MAX_ENVELOPE_BYTES) throw new Error('Oversized mirror snapshot');
-  const checked = verifyPublicEnvelope(JSON.parse(raw), tenant, trustedKey);
+  const checked = requireLease
+    ? verifyLeasedEdition(JSON.parse(raw), tenant, trustedKey, clock())
+    : verifyPublicEnvelope(JSON.parse(raw), tenant, trustedKey);
   return { ...checked, nodeId: node.id, byteCount: Buffer.byteLength(raw) };
 }
 
 export function createCommonsGateway({ tenant, mirrors, trustedPublicKeyPem, receiptDir,
-  timeoutMs = 1200 }) {
+  timeoutMs = 1200, requireLease = false, clock = Date.now }) {
   assertTenant(tenant);
   if (!Array.isArray(mirrors) || !mirrors.length || mirrors.length > 8 ||
       typeof trustedPublicKeyPem !== 'string' || !receiptDir ||
-      !Number.isInteger(timeoutMs) || timeoutMs < 50 || timeoutMs > 10000)
+      !Number.isInteger(timeoutMs) || timeoutMs < 50 || timeoutMs > 10000 ||
+      typeof requireLease !== 'boolean' || typeof clock !== 'function')
     throw new Error('Explicit mirrors, owner key, receipt directory and bounded timeout required');
   const nodes = mirrors.map(m => {
     if (!m || typeof m.id !== 'string' || !/^[a-z0-9-]{1,40}$/.test(m.id))
@@ -77,6 +81,7 @@ export function createCommonsGateway({ tenant, mirrors, trustedPublicKeyPem, rec
       id: randomUUID(), tenant, at: new Date().toISOString(),
       capability: 'public-hymnal.serve.read-only',
       requester: 'local-gateway', // no assertion of an actual GHoT node identity
+      leaseRequired: requireLease,
       nodes: nodes.map(n => n.id),
       attempts: [], selected: null,
       final: 'HOLD', admission: 'NONE',
@@ -86,9 +91,10 @@ export function createCommonsGateway({ tenant, mirrors, trustedPublicKeyPem, rec
     try {
       const probed = await Promise.all(nodes.map(async node => {
         try {
-          const result = await fetchMirror(node, tenant, trustedPublicKeyPem, timeoutMs);
+          const result = await fetchMirror(node, tenant, trustedPublicKeyPem, timeoutMs, requireLease, clock);
           record.attempts.push({ nodeId: node.id, status: 'verified', edition: result.edition,
-            sha256: result.sha256, bytesObserved: result.byteCount });
+            sha256: result.sha256, bytesObserved: result.byteCount,
+            ...(requireLease ? { leaseExpiresAt: new Date(result.expiresAt).toISOString() } : {}) });
           return result;
         } catch (error) {
           record.attempts.push({ nodeId: node.id, status: 'unavailable-or-rejected',
@@ -121,10 +127,14 @@ export function createCommonsGateway({ tenant, mirrors, trustedPublicKeyPem, rec
       record.selected = selected.nodeId;
       record.edition = selected.edition;
       record.sha256 = selected.sha256;
+      if (requireLease && clock() >= selected.expiresAt)
+        return { code: 503, body: { status: 'HOLD', reason: 'Selected publication lease expired' } };
       record.final = 'VERIFIED_PUBLIC_RESPONSE';
       return { code: 200, body: {
         songs: selected.songs, edition: selected.edition,
-        fromMirror: selected.nodeId, verifiedOwnerSignature: true
+        fromMirror: selected.nodeId, verifiedOwnerSignature: true,
+        ...(requireLease ? { leaseExpiresAt: new Date(selected.expiresAt).toISOString(),
+          boundedPublicationPermission: true } : {})
       } };
     } finally {
       // An operational observation, not a GHoT execution receipt, PENNY issuance,
@@ -142,7 +152,8 @@ export function createCommonsGateway({ tenant, mirrors, trustedPublicKeyPem, rec
     const path = new URL(req.url, 'http://localhost').pathname;
     if (req.method === 'GET' && path === '/health')
       return respond(res, 200, { role: 'verified-public-route', tenant, nodes: nodes.length,
-        highestSeenEdition: highWater?.edition ?? null, noPublicListener: true });
+        highestSeenEdition: highWater?.edition ?? null, noPublicListener: true,
+        boundedLeaseEnforced: requireLease });
     if (req.method !== 'GET' || path !== '/api/' + tenant + '/songs')
       return respond(res, 404, { error: 'Not found' });
     try {
