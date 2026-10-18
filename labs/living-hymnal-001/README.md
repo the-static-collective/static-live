@@ -94,3 +94,21 @@ church app (Tithely / other / web / QR)
 `HOST LINK != PLATFORM API` · `SEED != SONG` · `RECEIVE != ADMIT` · `PUBLICATION != AUTOMATIC LEGAL RIGHTS` · `STAGE PACKET != REAL AUDIO`
 
 The first goal is one real song carried by real musicians—not a congregation absorbed into a software product.
+
+## Extension 002: source-permission and portable released lyric bytes
+
+The lab now requires a separate **contributor publication-permission record for each admitted seed** (scope and reference to an independently obtained release document). Submitting a seed only permits **private review**, not publication. A local release and an interchurch lyric-sharing release are distinct scopes. Publication also requires pastoral and general rights-review assertions. These are **human attestations**, not cryptographic proof of real-world consent.
+
+Church-local release may create a stage packet; it **cannot** yield a cross-church reLATTE bundle. Interchurch sharing additionally requires every source contributor's explicit wider permission and separate sharing terms.
+
+The private reviewer route `GET /api/<tenant>/admin/bundle/<song-id>` downloads a JSON object with:
+
+- `schema: living-hymnal.relatte-export/v0.1`
+- `payload_text`: exact UTF-8 JSON bytes of six published text/music metadata fields
+- `spec`: an unsigned reLATTE opaque-organ specification pointing to the SHA-256 digest of those exact bytes.
+
+No raw seed text, alias, permission record identifier, backing stem, audio, or private prayer request is exported. The source_history_head is **null** because this lab has not established a signed historical chain.
+
+The separate [reLATTE Living Hymnal 002 draft](https://github.com/the-static-collective/reLATTE/pull/117) validates such bundles, signs an actual reLATTE crossing, sends it through a file-transport witness, and tests two independent local church decisions with restart replay. The adapter lives outside reLATTE core, so ordinary reLATTE transport and receivers remain unaware of worship semantics.
+
+**Still not production-ready:** authorship/license assertions are not independently verified, contributors cannot yet withdraw permission through the UI, and there is no production identity, key custody, storage, delivery or data-deletion machinery. Do not expose real congregational intake or present this as the church's own app without church leadership approval.
