@@ -129,3 +129,19 @@ Or from the lab directory: `npm run preflight -- <projection.json> <wav-asset-ro
 Outputs a machine-readable report with `ready`, `files`, `errors`, and `warnings`. Exit status 1 means the named audio is not ready for rehearsal playback. Check for sample-rate and duration mismatches before copying tracks onto the church's stage computer. **A green report is not a substitute for a live soundcheck or verification that audio can legally be used or streamed.** It does not produce click tracks, stems, multitracks or a mixing-console configuration; those remain human-prepared artifacts.
 
 Test coverage includes aligned WAV and private click, missing files, mismatched sample rates and durations, duplicate paths, directory traversal, and unresolved stage capabilities. All checks run on synthetic recordings.
+
+## Extension 004: Autodiscography Vault × Haunted Phonograph × Static Live
+
+An optional ancestry bridge lives in `src/vault-phono-live.mjs`. It calls **the existing** Static Live `src/phonograph-intake.js` and proves alignment among:
+
+- a source-only `haunted-phonograph.vault-provenance-bridge/v0.1` witness from [Haunted Phonography draft PR #27](https://github.com/the-static-collective/the-haunted-phonography/pull/27);
+- the exact completed `haunted-phonograph/receipt/v1` and its independently checked canonical hash;
+- the exact hashed `ResolvedPerformance/v1` (including proposed mutation and retained uncertainty);
+- a human-authored `LiveIntent/v0.1`;
+- the normal `static-live.performance-packet/v0.1` consumed unchanged by the live compiler.
+
+The output sidecar `living-hymnal.vault-phono-live-ancestry/v0.1` holds source, receipt, performance and stage-packet hashes only. It carries no local Vault path, session URL, source WAV, contributor alias or song lyrics. This is **an explicit optional stage-origin record**, not a new requirement for independently human-composed worship songs. It does not assert that the Vault contributor owned the original audio or granted the church reuse rights.
+
+Synthetic proof: `node --test test/vault-phono-live.test.mjs`. The companion Phonography PR separately proves the actual verified WAV → manual observations → MIDI → receipt → resolved performance path. Each repo can test its native boundary without importing the other repo's private media or broadening the personal Suno corpus acquisition gate.
+
+**A church-wide Vault remains a separate future organ.** The existing personal Autodiscography Vault presently admits Suno-preserved artifacts only; a Sunday livestream or member testimony cannot be filed there as though the church authorized it. A church-owned preservation archive needs an independent permission, access and retention contract.
