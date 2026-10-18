@@ -1,0 +1,23 @@
+{
+  "schema": "ghot.external-adapter-manifest/v0",
+  "adapter_id": "church-commons-004",
+  "capabilities": [
+    {
+      "capability": "church-commons.public-hymnal.lease-status",
+      "protocol": "stdin-json/stdout-json-v0",
+      "command": "node",
+      "args": [
+        "status-adapter.mjs"
+      ],
+      "timeout_seconds": 8,
+      "limits": {
+        "read_only": true,
+        "public_only": true,
+        "returns_song_count_not_song_content": true,
+        "requires_lease_verifying_gateway": true,
+        "no_shell": true,
+        "no_penny_credit": true
+      }
+    }
+  ]
+}
