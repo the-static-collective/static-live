@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSeed, replay, decideSeed, publishSong, toStaticLivePacket,
-  toRelatteOpaqueSpec, hostManifest } from '../src/core.mjs';
+import { createSeed, replay, decideSeed, recordSeedPermission, publishSong, toStaticLivePacket,
+  toRelatteOpaqueSpec, toRelatteExportBundle, hostManifest } from '../src/core.mjs';
 import { compileStageProjection } from '../../../src/compiler.js';
+import { createHash } from 'node:crypto';
+const awaitedHash = text => createHash('sha256').update(Buffer.from(text, 'utf8')).digest('hex');
 
 const tenant = 'sample-church';
 const base = { kind: 'lyric', body: 'You are the light through every dawn', permissionToReview: true, authorizedSubmitter: true };
@@ -11,6 +13,8 @@ const release = {
   bpm: 92, meter: '4/4', pastoralApproved: true, rightsCleared: true,
   approvalNote: 'Reviewed and approved by designated worship leader',
   rightsNote: 'Checked contributor permissions and stems terms',
+  interchurchSharingApproved: true,
+  sharingTerms: 'Permission for nonexclusive sharing of lyrics between local congregations',
   requiredCapabilities: ['lead-vocal.live', 'guitar.live', 'drums.live'],
   stems: [{ id: 'drums', kind: 'fallback', coversCapability: 'drums.live', path: 'stems/drums.wav', output: 'foh' }],
   cues: { click: 'stems/click.wav' }
@@ -38,10 +42,17 @@ test('each church retains local control; a rejected seed never reaches stage', (
 test('approved song travels to an actual Static Live stage compiler', () => {
   const seed = createSeed(tenant, base);
   const admit = decideSeed(tenant, replay([seed], tenant), seed.payload.id, 'ADMIT');
-  const state = replay([seed, admit], tenant);
+  const admitted = replay([seed, admit], tenant);
+  assert.throws(() => publishSong(tenant, admitted, { ...release, sourceSeedIds: [seed.payload.id] }), /permission must be recorded/i);
+  const localPermission = recordSeedPermission(tenant, admitted, seed.payload.id, 'PUBLIC_LYRICS', 'local-release-document-123');
+  const localState = replay([seed, admit, localPermission], tenant);
+  assert.throws(() => publishSong(tenant, localState, { ...release, sourceSeedIds: [seed.payload.id] }), /interchurch sharing requires/i);
+  const permission = recordSeedPermission(tenant, admitted, seed.payload.id,
+    'PUBLIC_LYRICS_AND_INTERCHURCH', 'signed-release-record-123');
+  const state = replay([seed, admit, permission], tenant);
   assert.throws(() => publishSong(tenant, state, { ...release, sourceSeedIds: [seed.payload.id], rightsCleared: false }), /approval and rights/);
   const published = publishSong(tenant, state, { ...release, sourceSeedIds: [seed.payload.id] });
-  const song = replay([seed, admit, published], tenant).songs[0];
+  const song = replay([seed, admit, permission, published], tenant).songs[0];
   const packet = toStaticLivePacket(song);
   assert.equal(packet.version, 'static-live.performance-packet/v0.1');
   const projection = compileStageProjection(packet, {
@@ -60,6 +71,13 @@ test('approved song travels to an actual Static Live stage compiler', () => {
   assert.ok(!JSON.stringify(spec).includes(seed.payload.body));
   assert.ok(!JSON.stringify(spec).includes('contributorAlias'));
   assert.equal(spec.source_world, 'church:' + tenant);
+  assert.equal(spec.source_history_head, null);
+  const bundle = toRelatteExportBundle(song);
+  assert.equal(bundle.spec.payload_refs[0].address, 'sha256:' +
+    (awaitedHash(bundle.payload_text)));
+  assert.equal(bundle.schema, 'living-hymnal.relatte-export/v0.1');
+  assert.equal(JSON.stringify(bundle).includes('signed-release-record-123'), false);
+  assert.equal(JSON.stringify(bundle).includes('contributorAlias'), false);
 });
 test('host integration uses external link rather than Tithely credentials', () => {
   const host = hostManifest('sample-church', 'https://example.org');
@@ -70,7 +88,22 @@ test('host integration uses external link rather than Tithely credentials', () =
 test('stem path escaping is refused', () => {
   const seed = createSeed(tenant, base);
   const admit = decideSeed(tenant, replay([seed], tenant), seed.payload.id, 'ADMIT');
-  const state = replay([seed, admit], tenant);
+  const permission = recordSeedPermission(tenant, replay([seed, admit], tenant), seed.payload.id,
+    'PUBLIC_LYRICS_AND_INTERCHURCH', 'signed-release-record-456');
+  const state = replay([seed, admit, permission], tenant);
   assert.throws(() => publishSong(tenant, state, { ...release, sourceSeedIds: [seed.payload.id],
     stems: [{ id: 'bad', kind: 'always', path: '../private.wav', output: 'foh' }] }), /safe relative path/);
+});
+
+test('local-only approval cannot be exported to another congregation', () => {
+  const seed = createSeed(tenant, base);
+  const admit = decideSeed(tenant, replay([seed], tenant), seed.payload.id, 'ADMIT');
+  const permission = recordSeedPermission(tenant, replay([seed, admit], tenant), seed.payload.id,
+    'PUBLIC_LYRICS', 'local-public-lyrics-approval-record');
+  const state = replay([seed, admit, permission], tenant);
+  const published = publishSong(tenant, state,
+    { ...release, interchurchSharingApproved: false, sourceSeedIds: [seed.payload.id] });
+  const song = replay([seed, admit, permission, published], tenant).songs[0];
+  assert.equal(toStaticLivePacket(song).song.title, release.title);
+  assert.throws(() => toRelatteExportBundle(song), /not approved for interchurch/);
 });
