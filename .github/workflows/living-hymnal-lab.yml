@@ -19,3 +19,12 @@ jobs:
         run: node --test labs/living-hymnal-001/test/*.test.mjs
       - name: Test existing Static Live suite
         run: npm test
+      - name: Check out upstream GHoT reference runtime
+        uses: actions/checkout@v4
+        with:
+          repository: the-static-collective/GHoT
+          path: ghot-upstream
+      - name: Prove external-adapter task and receipt using actual GHoT
+        env:
+          GHOT_REFERENCE_NODE: ${{ github.workspace }}/ghot-upstream/ghot/reference_node.py
+        run: node --test labs/living-hymnal-001/test/ghot-adapter.test.mjs
