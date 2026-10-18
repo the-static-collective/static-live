@@ -1,0 +1,13 @@
+{
+  "name": "@the-static-collective/living-hymnal-lab",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}
