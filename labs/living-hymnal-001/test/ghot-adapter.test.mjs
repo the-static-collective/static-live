@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
-import { spawn } from 'node:child_process';
+import { spawn, execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -86,6 +87,32 @@ test('GHoT external adapter reads the strict local gateway and emits no song tex
       'SECRET_PRAYER_MUST_NOT_TRAVEL_345',
       'SECRET_RIGHTS_REF_MUST_NOT_TRAVEL_345'])
       assert.equal(observed.includes(privateValue), false);
+    if (process.env.GHOT_REFERENCE_NODE) {
+      // Cross-repository field witness: execute GHoT's actual adapter manifest,
+      // task dispatcher and durable receipt creation, not a compatible mock.
+      const manifest = fileURLToPath(new URL('../ghot/adapter-manifest.json', import.meta.url));
+      const completed = await promisify(execFile)('python3', [
+        process.env.GHOT_REFERENCE_NODE, 'run',
+        'church-commons.public-hymnal.lease-status'
+      ], { timeout: 15000, env: {
+        ...process.env,
+        GHOT_ADAPTER_MANIFESTS: manifest,
+        GHOT_COMMONS_GATEWAY_URL: gateway.url,
+        GHOT_COMMONS_TENANT: tenant,
+        GHOT_HOME: join(dir, 'ghot-state')
+      } });
+      const receipt = JSON.parse(completed.stdout);
+      assert.equal(receipt.kind, 'ghot.receipt');
+      assert.equal(receipt.status, 'ok');
+      assert.equal(receipt.output.kind, 'ghot.external-adapter.result');
+      assert.equal(receipt.output.capability, 'church-commons.public-hymnal.lease-status');
+      assert.equal(receipt.output.result.status, 'AVAILABLE');
+      assert.equal(receipt.output.result.publicSongCount, 1);
+      for (const privateValue of ['SECRET_PRAYER_MUST_NOT_TRAVEL_345',
+        'SECRET_RIGHTS_REF_MUST_NOT_TRAVEL_345',
+        'A shining hymn for the morning'])
+        assert.equal(JSON.stringify(receipt).includes(privateValue), false);
+    }
     const malicious = await callAdapter(gateway.url, {
       GHOT_EXTERNAL_CAPABILITY: 'system.hash' });
     assert.notEqual(malicious.code, 0, 'Only declared capability can execute');
