@@ -4,7 +4,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { timingSafeEqual } from 'node:crypto';
 import { assertTenant, createSeed, replay, decideSeed, recordSeedPermission, publishSong,
-  toStaticLivePacket, toRelatteOpaqueSpec, toRelatteExportBundle, hostManifest } from './core.mjs';
+  toStaticLivePacket, toRelatteOpaqueSpec, toRelatteExportBundle, hostManifest, withdrawSong } from './core.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(here, '..', 'public');
@@ -77,7 +77,7 @@ export function createApp({ dataDir, tenants, adminTokens = {}, allowSubmissions
       if (req.method === 'GET' && action === 'config')
         return send(res, 200, { name: tenants[tenant].name, tenant, submissionsOpen: allowSubmissions });
       if (req.method === 'GET' && action === 'songs') {
-        const published = state(tenant).songs.map(s => ({
+        const published = state(tenant).songs.filter(s => s.status === 'PUBLISHED').map(s => ({
           id: s.id, title: s.title, lyrics: s.lyrics, scriptureRef: s.scriptureRef, bpm: s.bpm,
           meter: s.meter, publishedAt: s.publishedAt
         }));
@@ -117,9 +117,16 @@ export function createApp({ dataDir, tenants, adminTokens = {}, allowSubmissions
         const event = publishSong(tenant, state(tenant), await bodyJson(req));
         append(tenant, event); return send(res, 201, { songId: event.song.id, status: 'PUBLISHED' });
       }
+      if (req.method === 'POST' && action === 'admin/withdraw') {
+        const input = await bodyJson(req);
+        const event = withdrawSong(tenant, state(tenant), input.songId, input.reason);
+        append(tenant, event);
+        return send(res, 200, { status: 'WITHDRAWN', songId: event.songId,
+          notice: 'Withdrawn from originating church library; previously mirrored copies require separately signed renewal or withdrawal.' });
+      }
       const exported = /^admin\/(stage|relatte|bundle)\/([a-f0-9-]+)$/.exec(action);
       if (req.method === 'GET' && exported) {
-        const song = state(tenant).songs.find(x => x.id === exported[2]);
+        const song = state(tenant).songs.find(x => x.id === exported[2] && x.status === 'PUBLISHED');
         if (!song) return send(res, 404, { error: 'Unreleased song' });
         return send(res, 200, exported[1] === 'stage' ? toStaticLivePacket(song) : exported[1] === 'relatte' ? toRelatteOpaqueSpec(song) : toRelatteExportBundle(song));
       }
