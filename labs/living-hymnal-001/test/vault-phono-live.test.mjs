@@ -43,5 +43,5 @@ test('unrelated Vault/Phonograph ancestry refuses even if the performance is ind
   assert.throws(() => intakeVaultPhonoLive(alteredReceipt), /INVALID_VAULT_PHONOGRAPH_ANCESTRY/);
   const changedPerformance = witnesses();
   changedPerformance.performance.events[0].note = 10;
-  assert.throws(() => intakeVaultPhonoLive(changedPerformance), /PHONOGRAPH_PERFORMANCE_HASH_MISMATCH/);
+  assert.throws(() => intakeVaultPhonoLive(changedPerformance), /performance hash does not match receipt/);
 });
