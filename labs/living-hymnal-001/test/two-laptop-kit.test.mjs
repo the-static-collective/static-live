@@ -77,7 +77,12 @@ test('two-laptop operator CLI: signed public mirror survives losing owner/gatewa
     assert.equal(edition.publishedSongCount, 1);
     const verified = await run('verify', copiedKey, join(owner, 'public-edition.json'));
     assert.equal(verified.publicSongCount, 1);
-    const [aPort, bPort, gatewayPort] = await Promise.all([openPort(), openPort(), openPort()]);
+    const ports = [];
+    while (ports.length < 3) {
+      const chosen = await openPort();
+      if (!ports.includes(chosen)) ports.push(chosen);
+    }
+    const [aPort, bPort, gatewayPort] = ports;
     assert.equal(new Set([aPort, bPort, gatewayPort]).size, 3);
     mirrorA = await serve('mirror', a, pubKey, aPort);
     mirrorB = await serve('mirror', b, copiedKey, bPort);
