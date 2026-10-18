@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16291f">
+<title>Living Hymnal • Song Garden</title>
+<link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
+</head><body>
+<header class="mast">
+  <div class="eyebrow">SONG GARDEN / A LOCAL DEMONSTRATION</div>
+  <h1>Every voice<br><em>can plant a song.</em></h1>
+  <p>Bring a lyric, a Scripture passage, a melody, or a prayer. Every offering begins as a private seed—not a published song.</p>
+  <div id="church-label" class="chip">Unofficial demo • not affiliated with a church</div>
+</header>
+<main>
+  <nav class="tabs" aria-label="Living Hymnal">
+    <button id="tab-plant" class="active" aria-selected="true" type="button">Plant a seed</button>
+    <button id="tab-listen" aria-selected="false" type="button">Living hymnal</button>
+    <button id="tab-team" aria-selected="false" type="button">Worship team</button>
+  </nav>
+  <section id="panel-plant" class="panel" aria-labelledby="seed-heading">
+    <div class="kicker">01 / CONTRIBUTE</div><h2 id="seed-heading">What has been on your heart?</h2>
+    <p>Words, thoughts, and melodies are welcome. No songwriting experience needed. Submissions are reviewed privately by people before anything is shared.</p>
+    <form id="seed-form">
+      <label>I'm bringing…
+        <select name="kind" required>
+          <option value="song-idea">A song idea</option><option value="lyric">Words or a lyric</option>
+          <option value="scripture">A Scripture passage</option><option value="melody-description">A melody idea (described in words)</option>
+          <option value="prayer">A prayer</option><option value="testimony">A testimony (avoid names or private details)</option>
+        </select>
+      </label>
+      <label>Your seed<textarea name="body" minlength="8" maxlength="2000" rows="6" required placeholder="It can start with a single line…"></textarea></label>
+      <div class="two">
+        <label>Scripture reference (optional)<input name="scriptureRef" maxlength="120" placeholder="e.g. Psalm 40:3"></label>
+        <label>First name or alias (optional)<input name="contributorAlias" maxlength="60" placeholder="Leave blank if preferred"></label>
+      </div>
+      <p class="fineprint">Please don't include contact information, sensitive prayer requests, or other people's private stories. This prototype accepts text only. If a child contributed an idea, a parent or guardian must submit it.</p>
+      <label class="checkbox"><input type="checkbox" name="permissionToReview" required><span>I permit the church's designated reviewers to read this privately. I understand this does not give permission to publish it.</span></label>
+      <label class="checkbox"><input type="checkbox" name="authorizedSubmitter" required><span>I am an adult submitting my work, or a parent/guardian submitting with the child's permission.</span></label>
+      <button class="primary" type="submit">Offer this seed <span aria-hidden="true">→</span></button>
+      <output id="seed-status" role="status" aria-live="polite"></output>
+    </form>
+  </section>
+  <section id="panel-listen" class="panel" hidden>
+    <div class="kicker">02 / LEARN AND SING</div><h2>Our living hymnal</h2>
+    <p>Only songs approved for public sharing belong here. Published lyrics and Scripture references can be revisited without signing in.</p>
+    <div id="songs" class="song-cards"></div>
+  </section>
+  <section id="panel-team" class="panel" hidden>
+    <div class="kicker">03 / SERVE THE ROOM</div><h2>Worship workbench</h2>
+    <p>Private human review. A seed isn't automatically theology, a performance, or a release. Only authorized church reviewers can admit or refuse material.</p>
+    <label>Church reviewer token<input id="admin-token" type="password" autocomplete="off" placeholder="Private, church-specific token"></label>
+    <button type="button" class="secondary" id="load-seeds">Load held seeds</button>
+    <div id="review-list" class="review-list"></div>
+    <details class="publication">
+      <summary>Prepare an approved song for the living hymnal</summary>
+      <p>Requires admitted seeds, explicit pastoral approval, and a completed rights/permission review. This is a record of human assertions—not an automated legal determination.</p>
+      <form id="publish-form">
+        <label>Admitted seed IDs (comma separated)<input name="sourceSeedIds" required></label>
+        <label>Song title<input name="title" maxlength="120" required></label>
+        <label>Final lyrics<textarea name="lyrics" minlength="8" maxlength="12000" rows="7" required></textarea></label>
+        <label>Scripture reference<input name="scriptureRef" maxlength="120"></label>
+        <div class="two"><label>BPM<input name="bpm" type="number" min="40" max="240" value="92" required></label>
+        <label>Meter<select name="meter"><option>4/4</option><option>6/8</option><option>3/4</option><option>12/8</option><option>2/4</option></select></label></div>
+        <label>Required live parts (comma separated)<input name="requiredCapabilities" value="lead-vocal.live,guitar.live"></label>
+        <label>Stems JSON (optional)<textarea name="stems" rows="2" placeholder='[{"id":"pad","kind":"always","path":"stems/pad.wav","output":"foh"}]'></textarea></label>
+        <label>Click/cue JSON (optional)<input name="cues" placeholder='{"click":"stems/click.wav"}'></label>
+        <label>Pastoral approval record<input name="approvalNote" minlength="12" maxlength="500" required></label>
+        <label>Rights and contributor-permissions review record<input name="rightsNote" minlength="12" maxlength="500" required></label>
+        <label class="checkbox"><input type="checkbox" name="pastoralApproved" required><span>Authorized worship leadership has explicitly approved release.</span></label>
+        <label class="checkbox"><input type="checkbox" name="rightsCleared" required><span>Contributor permissions, audio/stem rights, and livestream/reuse plans have been reviewed.</span></label>
+        <button type="submit" class="primary">Publish approved song →</button><output id="publish-status" role="status"></output>
+      </form>
+    </details>
+    <div id="stage-exports"></div>
+  </section>
+</main>
+<footer><span>Living Hymnal 001 · reLATTE candidate export · Static Live performance packets</span>
+<span>Experimental, not an official church service.</span></footer>
+</body></html>
