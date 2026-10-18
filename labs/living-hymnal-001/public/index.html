@@ -66,6 +66,11 @@
         <label>Click/cue JSON (optional)<input name="cues" placeholder='{"click":"stems/click.wav"}'></label>
         <label>Pastoral approval record<input name="approvalNote" minlength="12" maxlength="500" required></label>
         <label>Rights and contributor-permissions review record<input name="rightsNote" minlength="12" maxlength="500" required></label>
+        <div class="fineprint"><strong>Sharing with another church is separate from local publication.</strong>
+        Every source contributor must grant the broader scope. Stems and audio are never included in this text-only exchange.</div>
+        <label class="checkbox"><input type="checkbox" name="interchurchSharingApproved"><span>All contributors have expressly approved sharing this song's lyrics with other churches.</span></label>
+        <label>Interchurch lyric-sharing license terms (only when enabled)
+        <input name="sharingTerms" maxlength="500" placeholder="e.g. Nonexclusive permission to sing and adapt lyrics for local worship"></label>
         <label class="checkbox"><input type="checkbox" name="pastoralApproved" required><span>Authorized worship leadership has explicitly approved release.</span></label>
         <label class="checkbox"><input type="checkbox" name="rightsCleared" required><span>Contributor permissions, audio/stem rights, and livestream/reuse plans have been reviewed.</span></label>
         <button type="submit" class="primary">Publish approved song →</button><output id="publish-status" role="status"></output>
