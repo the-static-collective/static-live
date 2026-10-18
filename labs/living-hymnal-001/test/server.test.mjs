@@ -37,11 +37,24 @@ test('church-scoped HTTP intake: anonymous HOLD, protected review, explicit rele
     assert.equal((await (await fetch(root + '/api/second-church/songs')).json()).songs.length, 0);
     const admit = await post('admin/decision', { seedId, decision: 'ADMIT' }, true);
     assert.equal(admit.status, 200);
+    const premature = await post('admin/publish', {
+      sourceSeedIds: [seedId], title: 'Seed Becoming Song', lyrics: 'I bring this little seed before you',
+      bpm: 92, meter: '4/4', pastoralApproved: true, rightsCleared: true,
+      approvalNote: 'Human worship leader explicitly approved this release',
+      rightsNote: 'Rights and permissions were manually reviewed'
+    }, true);
+    assert.equal(premature.status, 400);
+    const consent = await post('admin/permission', {
+      seedId, scope: 'PUBLIC_LYRICS_AND_INTERCHURCH', recordRef: 'signed-permission-reference-001'
+    }, true);
+    assert.equal(consent.status, 200);
     const publish = await post('admin/publish', {
       sourceSeedIds: [seedId], title: 'Seed Becoming Song', lyrics: 'I bring this little seed before you',
       bpm: 92, meter: '4/4', pastoralApproved: true, rightsCleared: true,
       approvalNote: 'Human worship leader explicitly approved this release',
       rightsNote: 'Rights and permissions were manually reviewed',
+      interchurchSharingApproved: true,
+      sharingTerms: 'The author grants nonexclusive interchurch lyric sharing permission',
       requiredCapabilities: ['lead-vocal.live', 'guitar.live'], stems: [], cues: {}
     }, true);
     assert.equal(publish.status, 201);
@@ -52,6 +65,11 @@ test('church-scoped HTTP intake: anonymous HOLD, protected review, explicit rele
     assert.equal((await fetch(at('admin/stage/' + songId), { headers })).status, 200);
     const relatte = await fetch(at('admin/relatte/' + songId), { headers });
     assert.equal((await relatte.json()).schema, 'relatte.opaque-organ-spec/v0');
+    const bundle = (await (await fetch(at('admin/bundle/' + songId), { headers })).json());
+    assert.equal(bundle.schema, 'living-hymnal.relatte-export/v0.1');
+    assert.equal(bundle.spec.payload_refs[0].address, (await (await fetch(at('admin/relatte/' + songId), { headers })).json()).payload_refs[0].address);
+    assert.ok(!JSON.stringify(bundle).includes('Someone'));
+    assert.ok(!JSON.stringify(bundle).includes('signed-permission-reference-001'));
     assert.equal((await (await fetch(at('integration'))).json()).adapters.tithely.actionType, 'Web Page');
   } finally {
     await new Promise(resolve => app.close(resolve));
