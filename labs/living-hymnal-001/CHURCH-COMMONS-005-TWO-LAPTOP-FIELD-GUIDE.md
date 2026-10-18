@@ -50,12 +50,9 @@ If either laptop already has the repository, use a separate checkout or worktree
 
 \`\`\`sh
 node scripts/two-laptop-kit.mjs init "$HOME/commons-owner"
-node scripts/two-laptop-kit.mjs verify \
-  "$HOME/commons-owner/owner-public.pem" \
-  "$HOME/commons-owner/public-edition.json"
 \`\`\`
 
-The \`verify\` command **must fail at this stage**, because the owner has not issued any public edition. That is expected. Run \`issue\` later, after the SSH tunnel is ready, to avoid wasting the short lease window.
+Run \`issue\` later, after the SSH tunnel is ready, to avoid wasting the short lease window. Do not transfer the generated \`owner-private.pem\` file.
 
 In a separate terminal on A, start its local mirror:
 
