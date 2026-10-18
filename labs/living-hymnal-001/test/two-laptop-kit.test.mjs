@@ -13,7 +13,7 @@ const cli = fileURLToPath(new URL('../scripts/two-laptop-kit.mjs', import.meta.u
 const run = async (...args) => {
   const { stdout } = await promisify(execFile)(process.execPath, [cli, ...args],
     { timeout: 10000 });
-  return JSON.parse(stdout.trim());
+  return stdout.trim().split('\n').map(x => JSON.parse(x)).at(-1);
 };
 async function openPort() {
   const s = createServer();
