@@ -45,9 +45,25 @@ export function replay(events, tenant) {
       const seed = seeds.get(event.seedId);
       if (!seed || seed.status !== 'HOLD' || !DECISIONS.includes(event.decision)) throw new Error('Invalid disposition history');
       seeds.set(event.seedId, { ...seed, status: event.decision, decidedAt: event.at });
+    } else if (event.type === 'seed.permission-recorded') {
+      const seed = seeds.get(event.seedId);
+      if (!seed || seed.status !== 'ADMIT' ||
+          !['PUBLIC_LYRICS', 'PUBLIC_LYRICS_AND_INTERCHURCH'].includes(event.scope) ||
+          typeof event.recordRef !== 'string' || event.recordRef.trim().length < 8) {
+        throw new Error('Invalid publication permission event');
+      }
+      if (seed.releasePermission) throw new Error('Permission already recorded; use a reviewed amendment');
+      seeds.set(event.seedId, { ...seed, releasePermission: {
+        scope: event.scope, recordRef: event.recordRef, recordedAt: event.at
+      } });
     } else if (event.type === 'song.published') {
       if (songs.has(event.song.id)) throw new Error('Duplicate publication');
-      if (!event.song.sourceSeedIds.every(id => seeds.get(id)?.status === 'ADMIT')) throw new Error('Unadmitted source');
+      if (!event.song.sourceSeedIds.every(id =>
+        seeds.get(id)?.status === 'ADMIT' && !!seeds.get(id)?.releasePermission))
+        throw new Error('Unadmitted or unlicensed source');
+      if (event.song.sharingApproval?.affirmed && !event.song.sourceSeedIds.every(id =>
+        seeds.get(id)?.releasePermission?.scope === 'PUBLIC_LYRICS_AND_INTERCHURCH'))
+        throw new Error('Source lacks permission for interchurch sharing');
       songs.set(event.song.id, { ...event.song, publishedAt: event.at });
     } else throw new Error('Unknown event type');
   }
@@ -59,6 +75,16 @@ export function decideSeed(tenant, state, seedId, decision, at = new Date().toIS
   const seed = state.seeds.find(s => s.id === seedId);
   if (!seed || seed.status !== 'HOLD') throw new Error('Seed not awaiting review');
   return { type: 'seed.decided', id: randomUUID(), tenant, seedId, decision, at };
+}
+export function recordSeedPermission(tenant, state, seedId, scope, recordRef, at = new Date().toISOString()) {
+  assertTenant(tenant);
+  if (!['PUBLIC_LYRICS', 'PUBLIC_LYRICS_AND_INTERCHURCH'].includes(scope))
+    throw new Error('Invalid permission scope');
+  const seed = state.seeds.find(s => s.id === seedId);
+  if (!seed || seed.status !== 'ADMIT' || seed.releasePermission)
+    throw new Error('Seed is not eligible for permission recording');
+  return { type: 'seed.permission-recorded', id: randomUUID(), tenant, seedId, scope,
+    recordRef: requireText(recordRef, 'Permission documentation reference', 300, 8), at };
 }
 function safeRelativePath(path) {
   const v = requireText(path, 'Audio path', 260);
@@ -75,6 +101,13 @@ export function publishSong(tenant, state, input, at = new Date().toISOString())
   const seedIds = [...new Set(input.sourceSeedIds)];
   if (!seedIds.every(id => state.seeds.some(s => s.id === id && s.status === 'ADMIT'))) {
     throw new Error('All source seeds must have been admitted');
+  }
+  if (!seedIds.every(id => state.seeds.find(s => s.id === id)?.releasePermission)) {
+    throw new Error('Contributor publication permission must be recorded for each source seed');
+  }
+  if (input.interchurchSharingApproved === true && !seedIds.every(id =>
+    state.seeds.find(s => s.id === id)?.releasePermission?.scope === 'PUBLIC_LYRICS_AND_INTERCHURCH')) {
+    throw new Error('Interchurch sharing requires explicit permission from each contributor');
   }
   if (input.pastoralApproved !== true || input.rightsCleared !== true) {
     throw new Error('Explicit pastoral approval and rights review required');
@@ -107,6 +140,10 @@ export function publishSong(tenant, state, input, at = new Date().toISOString())
     bpm, meter: input.meter, requiredCapabilities, stems, cues, landmarks: ['intro', 'verse', 'chorus', 'outro'],
     rightsReview: { affirmed: true, note: rightsNote },
     pastoralReview: { affirmed: true, note: approvalNote },
+    sharingApproval: input.interchurchSharingApproved === true
+      ? { affirmed: true, scope: 'PUBLIC_LYRICS_ONLY',
+          terms: requireText(input.sharingTerms, 'Interchurch license terms', 500, 12) }
+      : { affirmed: false, scope: 'LOCAL_CHURCH_ONLY' },
     status: 'PUBLISHED'
   };
   return { type: 'song.published', id: randomUUID(), tenant, at, song };
@@ -123,11 +160,16 @@ export function toStaticLivePacket(song) {
     stems: song.stems.map(x => ({ ...x })), cues: { ...song.cues }
   };
 }
-export function toRelatteOpaqueSpec(song, at = new Date().toISOString()) {
-  if (song.status !== 'PUBLISHED' || !song.rightsReview?.affirmed || !song.pastoralReview?.affirmed)
-    throw new Error('Only published material may be prepared for crossing');
-  const publicProjection = { id: song.id, title: song.title, lyrics: song.lyrics,
+export function toRelattePublicProjection(song) {
+  if (song.status !== 'PUBLISHED' || !song.rightsReview?.affirmed ||
+      !song.pastoralReview?.affirmed || song.sharingApproval?.affirmed !== true ||
+      song.sharingApproval.scope !== 'PUBLIC_LYRICS_ONLY')
+    throw new Error('Song is not approved for interchurch text sharing');
+  return { id: song.id, title: song.title, lyrics: song.lyrics,
     scriptureRef: song.scriptureRef, bpm: song.bpm, meter: song.meter };
+}
+export function toRelatteOpaqueSpec(song, at = new Date().toISOString()) {
+  const publicProjection = toRelattePublicProjection(song);
   return {
     schema: 'relatte.opaque-organ-spec/v0',
     family_ref: 'living-hymnal/v0.1',
@@ -135,14 +177,23 @@ export function toRelatteOpaqueSpec(song, at = new Date().toISOString()) {
     artifact_kind: 'PUBLISHED_CONGREGATIONAL_SONG',
     source_world: 'church:' + song.tenant,
     source_particular: 'song:' + song.id,
-    source_history_head: 'living-hymnal:published:' + song.id,
+    source_history_head: null, // append-only local journal is not a cryptographic history head
     payload_refs: [{ address: 'sha256:' + digest(publicProjection), role: 'song-projection',
       media_type: 'application/json' }],
     donor_claims: { status: 'PUBLISHED', rights_review_affirmed: true, pastoral_review_affirmed: true,
+      interchurch_sharing_approved: true, share_scope: 'PUBLIC_LYRICS_ONLY',
+      terms: song.sharingApproval.terms,
       payload_projection: 'id,title,lyrics,scriptureRef,bpm,meter' },
     requested_effect: { type: 'CANDIDATE_IMPORT', target: 'recipient-local-review' },
     return_address: null, created_at: at
   };
+}
+export function toRelatteExportBundle(song, at = new Date().toISOString()) {
+  const payload_text = JSON.stringify(toRelattePublicProjection(song));
+  const spec = toRelatteOpaqueSpec(song, at);
+  const computed = 'sha256:' + createHash('sha256').update(Buffer.from(payload_text, 'utf8')).digest('hex');
+  if (spec.payload_refs[0].address !== computed) throw new Error('Artifact hash mismatch');
+  return { schema: 'living-hymnal.relatte-export/v0.1', payload_text, spec };
 }
 export function hostManifest(tenant, baseUrl, label = 'Living Hymnal') {
   assertTenant(tenant);
